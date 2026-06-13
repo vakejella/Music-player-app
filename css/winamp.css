@@ -443,6 +443,7 @@ input[type="range"]::-moz-range-thumb {
   transform: scale(var(--sk-scale, 1.5));
   transform-origin: top center;
   image-rendering: pixelated;
+  overflow: hidden;
 }
 .sk-main > * {
   position: absolute;
@@ -480,32 +481,52 @@ input[type="range"]::-moz-range-thumb {
 .sk-eq      { left: 219px; top: 58px; width: 23px; height: 12px; }
 .sk-pl      { left: 242px; top: 58px; width: 23px; height: 12px; }
 
-/* Skin sliders — invisible track, sprite thumb from the skin bmp */
-.sk-posbar, .sk-volume, .sk-balance {
+/* Skin sliders — invisible track, sprite thumb from the skin bmp.
+   These use `input[type="range"].sk-*` so they outrank the modern
+   `input[type="range"]` rules above (which would otherwise force
+   width:100%/height:18px and paint a grey track + bevel thumb). */
+input[type="range"].sk-posbar,
+input[type="range"].sk-volume,
+input[type="range"].sk-balance {
   -webkit-appearance: none; appearance: none;
-  background: no-repeat; background-color: transparent;
-  outline: none; image-rendering: pixelated;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  border: none; outline: none; box-shadow: none;
+  image-rendering: pixelated;
 }
-.sk-posbar  { left: 16px;  top: 72px; width: 248px; height: 10px; }
-.sk-volume  { left: 107px; top: 57px; width: 68px;  height: 13px; }
-.sk-balance { left: 177px; top: 57px; width: 38px;  height: 13px; }
+input[type="range"].sk-posbar  { left: 16px;  top: 72px; width: 248px; height: 10px; }
+input[type="range"].sk-volume  { left: 107px; top: 57px; width: 68px;  height: 13px; }
+input[type="range"].sk-balance { left: 177px; top: 57px; width: 38px;  height: 13px; }
 
-.sk-posbar::-webkit-slider-thumb {
+input[type="range"].sk-posbar::-webkit-slider-runnable-track,
+input[type="range"].sk-volume::-webkit-slider-runnable-track,
+input[type="range"].sk-balance::-webkit-slider-runnable-track {
   -webkit-appearance: none;
+  background: transparent; border: none; box-shadow: none; height: 100%;
+}
+input[type="range"].sk-posbar::-moz-range-track,
+input[type="range"].sk-volume::-moz-range-track,
+input[type="range"].sk-balance::-moz-range-track {
+  background: transparent; border: none; height: 100%;
+}
+input[type="range"].sk-posbar::-webkit-slider-thumb {
+  -webkit-appearance: none; margin-top: 0;
   width: 29px; height: 10px;
   background-image: var(--posbar-img);
-  background-position: -248px 0; background-repeat: no-repeat;
-  image-rendering: pixelated;
+  background-position: -248px 0; background-repeat: no-repeat; background-color: transparent;
+  border: none; image-rendering: pixelated;
 }
-.sk-volume::-webkit-slider-thumb, .sk-balance::-webkit-slider-thumb {
-  -webkit-appearance: none;
+input[type="range"].sk-volume::-webkit-slider-thumb,
+input[type="range"].sk-balance::-webkit-slider-thumb {
+  -webkit-appearance: none; margin-top: 0;
   width: 14px; height: 11px;
   background-image: var(--thumb-img);
-  background-position: -15px -422px; background-repeat: no-repeat;
-  image-rendering: pixelated;
+  background-position: -15px -422px; background-repeat: no-repeat; background-color: transparent;
+  border: none; image-rendering: pixelated;
 }
-.sk-posbar::-moz-range-thumb { width: 29px; height: 10px; border: 0; background: rgba(255,255,255,0.6); }
-.sk-volume::-moz-range-thumb, .sk-balance::-moz-range-thumb { width: 14px; height: 11px; border: 0; background: rgba(255,255,255,0.6); }
+input[type="range"].sk-posbar::-moz-range-thumb { width: 29px; height: 10px; border: 0; background: rgba(255,255,255,0.7); }
+input[type="range"].sk-volume::-moz-range-thumb,
+input[type="range"].sk-balance::-moz-range-thumb { width: 14px; height: 11px; border: 0; background: rgba(255,255,255,0.7); }
 
 /* When a skin is active, hide the modern main window & recolor playlist */
 html.skinned .main-window { display: none; }
