@@ -71,18 +71,22 @@ and **Add to Home Screen** to install it as a standalone app.
 > A secure context (`https://` or `localhost`) is required for the service
 > worker and audio graph. The bundled dev server uses `localhost`, which counts.
 
-## Build the Android APK
+## Android APK
 
-The `android/` directory wraps the web app in a native WebView shell
-(`WebViewAssetLoader` serves it over a virtual `https://` origin so ES modules,
-the service worker, and Web Audio all work). The web app is the single source of
-truth — a Gradle task bundles it into the APK at build time, so there's nothing
-to keep in sync.
+A prebuilt debug APK is committed at
+[`releases/winamp-mobile-v1.0.apk`](releases/winamp-mobile-v1.0.apk) — download
+it, enable "Install unknown apps" on your phone, and open it.
+
+To build it yourself: the `android/` directory wraps the web app in a native
+WebView shell (`WebViewAssetLoader` serves it over a virtual `https://` origin so
+ES modules, the service worker, and Web Audio all work). The web app is the
+single source of truth — a Gradle task bundles it into the APK at build time, so
+there's nothing to keep in sync.
 
 ```bash
 cd android
 export ANDROID_HOME=/path/to/android-sdk      # needs platform 34 + build-tools 34
-gradle :app:assembleDebug                      # or ./gradlew if you add a wrapper
+./gradlew :app:assembleDebug                   # Gradle wrapper is included
 # → app/build/outputs/apk/debug/app-debug.apk
 ```
 
