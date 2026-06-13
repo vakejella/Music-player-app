@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2a40"/>
+      <stop offset="1" stop-color="#101018"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#00b341"/>
+      <stop offset="0.6" stop-color="#3cff6e"/>
+      <stop offset="0.85" stop-color="#ffd24a"/>
+      <stop offset="1" stop-color="#ff4a3c"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <rect x="56" y="56" width="400" height="400" rx="64" fill="none" stroke="#54546a" stroke-width="6"/>
+  <!-- LCD strip -->
+  <rect x="96" y="120" width="320" height="96" rx="12" fill="#000"/>
+  <text x="118" y="190" font-family="monospace" font-size="64" font-weight="bold" fill="#3cff6e">WA</text>
+  <!-- Spectrum bars -->
+  <g>
+    <rect x="100" y="300" width="40" height="92" rx="4" fill="url(#bar)"/>
+    <rect x="156" y="260" width="40" height="132" rx="4" fill="url(#bar)"/>
+    <rect x="212" y="232" width="40" height="160" rx="4" fill="url(#bar)"/>
+    <rect x="268" y="280" width="40" height="112" rx="4" fill="url(#bar)"/>
+    <rect x="324" y="248" width="40" height="144" rx="4" fill="url(#bar)"/>
+    <rect x="380" y="312" width="32" height="80" rx="4" fill="url(#bar)"/>
+  </g>
+</svg>
