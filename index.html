@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#1c1c2b" />
+  <meta name="description" content="Winamp Mobile — a classic Winamp-style music player for your phone. It really whips the llama's ass." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Winamp" />
+  <title>Winamp Mobile</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/winamp.css" />
+</head>
+<body>
+  <div id="app" class="winamp">
+
+    <!-- ============ MAIN PLAYER WINDOW ============ -->
+    <section class="window main-window" id="mainWindow">
+      <div class="titlebar" id="mainTitlebar">
+        <span class="title-text">WINAMP</span>
+        <div class="titlebar-buttons">
+          <button class="tb-btn" id="aboutBtn" title="About" aria-label="About">≡</button>
+        </div>
+      </div>
+
+      <div class="main-body">
+        <!-- Visualizer + LCD display row -->
+        <div class="display-row">
+          <div class="visualizer-wrap">
+            <canvas id="visualizer" width="152" height="44" aria-label="Audio visualizer"></canvas>
+            <button id="visModeBtn" class="vis-mode" title="Change visualization">VIS</button>
+          </div>
+
+          <div class="lcd">
+            <div class="lcd-top">
+              <span class="time" id="timeDisplay">00:00</span>
+              <div class="lcd-indicators">
+                <span class="kbps" id="kbpsDisplay">--</span>
+                <span class="khz" id="khzDisplay">--</span>
+                <span class="stereo" id="stereoDisplay">stereo</span>
+              </div>
+            </div>
+            <div class="track-info">
+              <div class="marquee" id="trackMarquee">
+                <span id="trackTitle">Winamp Mobile — load a track to begin ★</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seek bar -->
+        <div class="seek-row">
+          <input type="range" id="seekBar" class="seek" min="0" max="1000" value="0" step="1" aria-label="Seek" />
+        </div>
+
+        <!-- Volume + balance -->
+        <div class="slider-row">
+          <div class="slider-group">
+            <span class="slider-label">VOL</span>
+            <input type="range" id="volume" class="vol" min="0" max="100" value="80" aria-label="Volume" />
+          </div>
+          <div class="slider-group">
+            <span class="slider-label">BAL</span>
+            <input type="range" id="balance" class="bal" min="-100" max="100" value="0" aria-label="Balance" />
+          </div>
+        </div>
+
+        <!-- Transport controls -->
+        <div class="transport">
+          <button class="t-btn" id="prevBtn" title="Previous" aria-label="Previous">⏮</button>
+          <button class="t-btn" id="playBtn" title="Play" aria-label="Play">▶</button>
+          <button class="t-btn" id="pauseBtn" title="Pause" aria-label="Pause">⏸</button>
+          <button class="t-btn" id="stopBtn" title="Stop" aria-label="Stop">⏹</button>
+          <button class="t-btn" id="nextBtn" title="Next" aria-label="Next">⏭</button>
+          <button class="t-btn eject" id="ejectBtn" title="Open files" aria-label="Open files">⏏</button>
+        </div>
+
+        <!-- Toggle row -->
+        <div class="toggle-row">
+          <button class="toggle" id="shuffleBtn" title="Shuffle">SHUF</button>
+          <button class="toggle" id="repeatBtn" title="Repeat">REP</button>
+          <button class="toggle active" id="eqToggle" title="Equalizer">EQ</button>
+          <button class="toggle active" id="plToggle" title="Playlist">PL</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CLASSIC SKINNED MAIN WINDOW (shown when a .wsz is loaded) ============ -->
+    <section class="sk-wrap" id="skWrap" hidden aria-label="Classic Winamp skin">
+      <div class="sk-main" id="skMain">
+        <div class="sk-titlebar" id="skTitlebar"></div>
+        <button class="sk-menu" id="skMenuBtn" title="Menu / load skin" aria-label="Menu"></button>
+
+        <canvas class="sk-vis" id="skVis" width="76" height="16"></canvas>
+        <canvas class="sk-time" id="skTime" width="63" height="13"></canvas>
+        <canvas class="sk-title" id="skTitle" width="153" height="6"></canvas>
+        <canvas class="sk-kbps" id="skKbps" width="15" height="6"></canvas>
+        <canvas class="sk-khz" id="skKhz" width="15" height="6"></canvas>
+
+        <input type="range" class="sk-posbar" id="skPosbar" min="0" max="1000" value="0" aria-label="Seek" />
+        <input type="range" class="sk-volume" id="skVolume" min="0" max="100" value="80" aria-label="Volume" />
+        <input type="range" class="sk-balance" id="skBalance" min="-100" max="100" value="0" aria-label="Balance" />
+
+        <button class="sk-btn sk-prev"  id="skPrev"  aria-label="Previous"></button>
+        <button class="sk-btn sk-play"  id="skPlay"  aria-label="Play"></button>
+        <button class="sk-btn sk-pause" id="skPause" aria-label="Pause"></button>
+        <button class="sk-btn sk-stop"  id="skStop"  aria-label="Stop"></button>
+        <button class="sk-btn sk-next"  id="skNext"  aria-label="Next"></button>
+        <button class="sk-btn sk-eject" id="skEject" aria-label="Open files"></button>
+
+        <button class="sk-toggle sk-shuffle" id="skShuffle" aria-label="Shuffle"></button>
+        <button class="sk-toggle sk-repeat"  id="skRepeat"  aria-label="Repeat"></button>
+        <button class="sk-toggle sk-eq" id="skEqBtn" aria-label="Equalizer"></button>
+        <button class="sk-toggle sk-pl" id="skPlBtn" aria-label="Playlist"></button>
+      </div>
+    </section>
+
+    <!-- ============ EQUALIZER WINDOW ============ -->
+    <section class="window eq-window" id="eqWindow">
+      <div class="titlebar">
+        <span class="title-text">EQUALIZER</span>
+        <div class="titlebar-buttons">
+          <button class="tb-btn" id="eqOnBtn">ON</button>
+          <button class="tb-btn" id="eqAutoBtn">AUTO</button>
+        </div>
+      </div>
+      <div class="eq-body">
+        <div class="eq-preamp">
+          <span class="eq-band-label">PRE</span>
+          <input type="range" class="eq-slider preamp" id="preamp" min="-12" max="12" value="0" step="0.5" orient="vertical" aria-label="Preamp" />
+        </div>
+        <div class="eq-bands" id="eqBands"><!-- generated --></div>
+      </div>
+      <div class="eq-presets">
+        <label for="eqPreset" class="visually-hidden">EQ Preset</label>
+        <select id="eqPreset" class="eq-preset-select">
+          <option value="flat">Flat</option>
+          <option value="rock">Rock</option>
+          <option value="pop">Pop</option>
+          <option value="jazz">Jazz</option>
+          <option value="classical">Classical</option>
+          <option value="dance">Dance</option>
+          <option value="bass">Bass Boost</option>
+          <option value="treble">Treble Boost</option>
+          <option value="vocal">Vocal</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- ============ PLAYLIST WINDOW ============ -->
+    <section class="window pl-window" id="plWindow">
+      <div class="titlebar">
+        <span class="title-text">PLAYLIST EDITOR</span>
+        <div class="titlebar-buttons">
+          <span class="pl-count" id="plCount">0 items</span>
+        </div>
+      </div>
+      <ul class="playlist" id="playlist"></ul>
+      <div class="pl-footer">
+        <button class="pl-btn" id="addBtn">+ ADD</button>
+        <button class="pl-btn" id="addDemoBtn">+ DEMO</button>
+        <button class="pl-btn" id="clearBtn">CLEAR</button>
+        <span class="pl-total" id="plTotalTime">00:00 / 00:00</span>
+      </div>
+    </section>
+
+    <div class="skin-bar">
+      <button class="skin-load-btn" id="loadSkinBtn">🎨 LOAD .WSZ SKIN</button>
+      <button class="skin-load-btn" id="removeSkinBtn" hidden>↩ MODERN UI</button>
+    </div>
+
+    <footer class="credits">
+      Winamp Mobile · It really whips the llama's ass 🦙
+    </footer>
+  </div>
+
+  <!-- Hidden file inputs -->
+  <input type="file" id="fileInput" accept="audio/*" multiple hidden />
+  <input type="file" id="skinInput" accept=".wsz,.zip,application/zip" hidden />
+
+  <!-- About modal -->
+  <div class="modal" id="aboutModal" hidden>
+    <div class="modal-box">
+      <h2>WINAMP MOBILE</h2>
+      <p>A loving recreation of the classic Winamp player, rebuilt for your phone.</p>
+      <ul>
+        <li>🎵 Plays local audio files (MP3, OGG, WAV, M4A…)</li>
+        <li>📊 Real-time spectrum analyzer & oscilloscope</li>
+        <li>🎚️ 10-band graphic equalizer with presets</li>
+        <li>📃 Drag-free touch playlist with shuffle &amp; repeat</li>
+        <li>📱 Installable — add to your home screen</li>
+      </ul>
+      <p class="modal-note">No tracks are uploaded anywhere — everything plays locally on your device.</p>
+      <button class="modal-close" id="aboutClose">CLOSE</button>
+    </div>
+  </div>
+
+  <div class="drop-overlay" id="dropOverlay" hidden>
+    <div class="drop-msg">⏏ Drop audio files to add them to the playlist</div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

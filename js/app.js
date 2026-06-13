@@ -1,0 +1,399 @@
+/* ===================================================================
+   app.js — main controller, wires UI -> Player / Playlist / EQ / Visualizer
+   =================================================================== */
+
+import { Player } from './player.js';
+import { Visualizer } from './visualizer.js';
+import { Equalizer } from './equalizer.js';
+import { Playlist, formatTime } from './playlist.js';
+import { generateDemoTracks } from './demo.js';
+import { readSkinArchive } from './wsz.js';
+import { ClassicSkin } from './skin.js';
+
+const $ = (id) => document.getElementById(id);
+
+const player = new Player();
+const visualizer = new Visualizer($('visualizer'), player);
+const skVisualizer = new Visualizer($('skVis'), player);   // classic-skin spectrum
+const playlist = new Playlist($('playlist'), $('plCount'), $('plTotalTime'));
+const equalizer = new Equalizer(player, $('eqBands'), $('preamp'), $('eqPreset'));
+const skin = new ClassicSkin();
+let skinned = false;
+
+let showRemaining = false;
+let eqEnabled = true;
+let seeking = false;
+
+/* ---------------- Track loading & playback ---------------- */
+
+function loadAndPlay(track) {
+  if (!track) return;
+  player.load(track.url);
+  setTrackTitle(track.title);
+  player.play();
+}
+
+let currentTitleText = 'WINAMP MOBILE   ***   ';
+function setTrackTitle(title) {
+  const idx = playlist.currentIndex;
+  const prefix = idx >= 0 ? `${idx + 1}. ` : '';
+  $('trackTitle').textContent = `${prefix}${title}`;
+  currentTitleText = `${prefix}${title}   ***   `;
+}
+
+/* Classic-skin scrolling title (text.bmp bitmap font). */
+let titleScroll = 0;
+function classicTitleLoop() {
+  if (skinned && skin.hasFont()) {
+    if (!player.paused) titleScroll += 0.5;
+    skin.renderText($('skTitle'), currentTitleText, Math.floor(titleScroll));
+  }
+  requestAnimationFrame(classicTitleLoop);
+}
+requestAnimationFrame(classicTitleLoop);
+
+function playCurrentOrFirst() {
+  if (playlist.current) { loadAndPlay(playlist.current); return; }
+  if (playlist.tracks.length) loadAndPlay(playlist.setCurrent(0));
+}
+
+/* ---------------- Transport actions (shared by modern + classic UI) ---------------- */
+
+function doPlay() {
+  if (!playlist.current && playlist.tracks.length === 0) { openFiles(); return; }
+  if (player.audio.src && player.paused && player.currentTime > 0) { player.play(); return; }
+  playCurrentOrFirst();
+}
+const doPause = () => player.toggle();
+const doStop  = () => { player.stop(); updatePlayingState(); };
+const doNext  = () => { const t = playlist.next(); if (t) loadAndPlay(t); };
+const doPrev  = () => { const t = playlist.prev(); if (t) loadAndPlay(t); };
+
+function bind(id, fn) { const el = $(id); if (el) el.addEventListener('click', fn); }
+bind('playBtn', doPlay);   bind('skPlay', doPlay);
+bind('pauseBtn', doPause); bind('skPause', doPause);
+bind('stopBtn', doStop);   bind('skStop', doStop);
+bind('nextBtn', doNext);   bind('skNext', doNext);
+bind('prevBtn', doPrev);   bind('skPrev', doPrev);
+bind('ejectBtn', openFiles); bind('skEject', openFiles);
+bind('skMenuBtn', () => $('aboutModal').hidden = false);
+
+/* ---------------- Player events ---------------- */
+
+player.addEventListener('ended', () => {
+  const t = playlist.advanceOnEnd();
+  if (t) loadAndPlay(t);
+  else updatePlayingState();
+});
+
+player.addEventListener('loadedmetadata', () => {
+  if (playlist.current && player.duration) {
+    playlist.updateDuration(playlist.current.id, player.duration);
+  }
+});
+
+player.addEventListener('play', updatePlayingState);
+player.addEventListener('pause', updatePlayingState);
+
+player.addEventListener('timeupdate', () => {
+  if (seeking) return;
+  const cur = player.currentTime;
+  const dur = player.duration;
+  const timeStr = showRemaining && dur ? '-' + formatTime(dur - cur) : formatTime(cur);
+  $('timeDisplay').textContent = timeStr;
+  const pos = dur ? String(Math.floor((cur / dur) * 1000)) : '0';
+  $('seekBar').value = pos;
+  if (skinned) {
+    $('skPosbar').value = pos;
+    skin.renderTime($('skTime'), timeStr.replace('-', ''));
+    skin.renderText($('skKbps'), '320');
+    skin.renderText($('skKhz'), '44');
+  }
+});
+
+player.addEventListener('playerror', () => {
+  $('trackTitle').textContent = 'Tap ▶ to start playback (browser blocked autoplay)';
+});
+
+function updatePlayingState() {
+  const playing = !player.paused;
+  $('playBtn').classList.toggle('playing', playing);
+  const marquee = $('trackMarquee');
+  marquee.classList.toggle('paused', !playing);
+  $('stereoDisplay').classList.toggle('on', playing);
+  if (playing) {
+    (skinned ? skVisualizer : visualizer).start();
+    $('kbpsDisplay').textContent = '320';
+    $('khzDisplay').textContent = '44';
+  } else {
+    visualizer.stop();
+    skVisualizer.stop();
+  }
+}
+
+/* ---------------- Seek ---------------- */
+
+const seekBar = $('seekBar');
+const beginSeek = () => { seeking = true; };
+const endSeek = () => {
+  player.seekFraction(parseInt(seekBar.value, 10) / 1000);
+  seeking = false;
+};
+seekBar.addEventListener('input', () => {
+  if (player.duration) {
+    const t = (parseInt(seekBar.value, 10) / 1000) * player.duration;
+    $('timeDisplay').textContent = formatTime(t);
+  }
+});
+['mousedown', 'touchstart'].forEach((e) => seekBar.addEventListener(e, beginSeek));
+['mouseup', 'touchend', 'change'].forEach((e) => seekBar.addEventListener(e, endSeek));
+
+/* ---------------- Volume & balance ---------------- */
+
+$('volume').addEventListener('input', (e) => { player.setVolume(e.target.value / 100); $('skVolume').value = e.target.value; });
+player.setVolume(0.8);
+$('balance').addEventListener('input', (e) => { player.setBalance(e.target.value / 100); $('skBalance').value = e.target.value; });
+
+// Classic-skin sliders drive the same player and mirror the modern ones.
+$('skVolume').addEventListener('input', (e) => { player.setVolume(e.target.value / 100); $('volume').value = e.target.value; });
+$('skBalance').addEventListener('input', (e) => { player.setBalance(e.target.value / 100); $('balance').value = e.target.value; });
+const skPosbar = $('skPosbar');
+skPosbar.addEventListener('input', () => { seeking = true; });
+skPosbar.addEventListener('change', () => { player.seekFraction(parseInt(skPosbar.value, 10) / 1000); seeking = false; });
+
+/* ---------------- LCD time toggle ---------------- */
+
+$('timeDisplay').addEventListener('click', () => { showRemaining = !showRemaining; });
+
+/* ---------------- Visualizer mode ---------------- */
+
+$('visModeBtn').addEventListener('click', () => {
+  const mode = visualizer.cycleMode();
+  $('visModeBtn').textContent = mode.toUpperCase();
+});
+
+/* ---------------- Toggles: shuffle / repeat / window collapse ---------------- */
+
+function toggleShuffle() {
+  playlist.shuffle = !playlist.shuffle;
+  $('shuffleBtn').classList.toggle('active', playlist.shuffle);
+  skin.setToggle('#skShuffle', playlist.shuffle);
+}
+function toggleRepeat() {
+  playlist.repeat = playlist.repeat === 'none' ? 'all' : (playlist.repeat === 'all' ? 'one' : 'none');
+  const on = playlist.repeat !== 'none';
+  $('repeatBtn').classList.toggle('active', on);
+  $('repeatBtn').textContent = playlist.repeat === 'one' ? 'REP1' : 'REP';
+  skin.setToggle('#skRepeat', on);
+}
+bind('shuffleBtn', toggleShuffle); bind('skShuffle', toggleShuffle);
+bind('repeatBtn', toggleRepeat);   bind('skRepeat', toggleRepeat);
+
+function toggleEqWindow() {
+  const collapsed = $('eqWindow').classList.toggle('collapsed');
+  $('eqToggle').classList.toggle('active', !collapsed);
+  skin.setToggle('#skEqBtn', !collapsed);
+}
+function togglePlWindow() {
+  const collapsed = $('plWindow').classList.toggle('collapsed');
+  $('plToggle').classList.toggle('active', !collapsed);
+  skin.setToggle('#skPlBtn', !collapsed);
+}
+bind('eqToggle', toggleEqWindow); bind('skEqBtn', toggleEqWindow);
+bind('plToggle', togglePlWindow); bind('skPlBtn', togglePlWindow);
+
+/* ---------------- EQ on/off + presets ---------------- */
+
+const eqOnBtn = $('eqOnBtn');
+eqOnBtn.classList.add('active');
+eqOnBtn.addEventListener('click', () => {
+  eqEnabled = !eqEnabled;
+  eqOnBtn.classList.toggle('active', eqEnabled);
+  equalizer.setEnabled(eqEnabled);
+});
+$('eqAutoBtn').addEventListener('click', () => equalizer.applyPreset('flat'));
+
+/* ---------------- Playlist interactions ---------------- */
+
+playlist.addEventListener('play', (e) => loadAndPlay(e.detail));
+playlist.addEventListener('change', () => playlist.render());
+
+$('addBtn').addEventListener('click', openFiles);
+$('clearBtn').addEventListener('click', () => { player.stop(); playlist.clear(); updatePlayingState(); $('trackTitle').textContent = 'Winamp Mobile — load a track to begin ★'; });
+$('addDemoBtn').addEventListener('click', () => {
+  const wasEmpty = playlist.tracks.length === 0;
+  playlist.addMany(generateDemoTracks());
+  if (wasEmpty) playlist.setCurrent(0);
+});
+
+/* ---------------- File input & drag/drop ---------------- */
+
+const fileInput = $('fileInput');
+function openFiles() { fileInput.click(); }
+
+fileInput.addEventListener('change', () => {
+  addFiles(fileInput.files);
+  fileInput.value = '';
+});
+
+function addFiles(fileList) {
+  const files = Array.from(fileList).filter((f) => f.type.startsWith('audio/') || /\.(mp3|ogg|wav|m4a|aac|flac|opus)$/i.test(f.name));
+  if (!files.length) return;
+  const wasEmpty = playlist.tracks.length === 0;
+  const tracks = files.map((f) => ({
+    title: f.name.replace(/\.[^.]+$/, ''),
+    url: URL.createObjectURL(f),
+    isObjectURL: true,
+    duration: 0,
+  }));
+  playlist.addMany(tracks);
+  if (wasEmpty) playlist.setCurrent(0);
+}
+
+// Drag & drop on desktop.
+const dropOverlay = $('dropOverlay');
+let dragDepth = 0;
+window.addEventListener('dragenter', (e) => { e.preventDefault(); dragDepth++; dropOverlay.hidden = false; });
+window.addEventListener('dragover', (e) => e.preventDefault());
+window.addEventListener('dragleave', (e) => { e.preventDefault(); if (--dragDepth <= 0) { dropOverlay.hidden = true; dragDepth = 0; } });
+window.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dragDepth = 0;
+  dropOverlay.hidden = true;
+  if (!e.dataTransfer || !e.dataTransfer.files.length) return;
+  const files = Array.from(e.dataTransfer.files);
+  const skinFile = files.find((f) => /\.(wsz|zip)$/i.test(f.name));
+  if (skinFile) applySkinFile(skinFile);
+  const audio = files.filter((f) => f !== skinFile);
+  if (audio.length) addFiles(audio);
+});
+
+/* ---------------- Winamp skin (.wsz) loading ---------------- */
+
+const skinInput = $('skinInput');
+$('loadSkinBtn').addEventListener('click', () => skinInput.click());
+$('removeSkinBtn').addEventListener('click', removeSkin);
+skinInput.addEventListener('change', () => {
+  if (skinInput.files[0]) applySkinFile(skinInput.files[0]);
+  skinInput.value = '';
+});
+
+async function applySkinFile(file) {
+  try {
+    const buf = await file.arrayBuffer();
+    const files = await readSkinArchive(buf);
+    if (!files.get('main.bmp')) throw new Error('No main.bmp — not a classic skin');
+    await skin.apply(files, file.name.replace(/\.[^.]+$/, ''));
+    enterSkinnedMode();
+  } catch (err) {
+    alert('Could not load skin: ' + err.message);
+  }
+}
+
+function enterSkinnedMode() {
+  skinned = true;
+  $('skWrap').hidden = false;
+  $('removeSkinBtn').hidden = false;
+  $('loadSkinBtn').textContent = '🎨 CHANGE SKIN';
+
+  // Slider sprites pulled straight from the skin's bitmaps.
+  const url = (n) => { const i = skin.images.get(n); return i ? `url("${i.src}")` : ''; };
+  $('skPosbar').style.setProperty('--posbar-img', url('posbar.bmp'));
+  $('skVolume').style.backgroundImage = url('volume.bmp');
+  $('skVolume').style.setProperty('--thumb-img', url('volume.bmp'));
+  $('skBalance').style.backgroundImage = url('balance.bmp');
+  $('skBalance').style.setProperty('--thumb-img', url('balance.bmp'));
+  updateVolumeBg();
+
+  // Mirror current state onto the skinned controls.
+  $('skVolume').value = $('volume').value;
+  $('skBalance').value = $('balance').value;
+  skin.setToggle('#skShuffle', playlist.shuffle);
+  skin.setToggle('#skRepeat', playlist.repeat !== 'none');
+  skin.setToggle('#skEqBtn', !$('eqWindow').classList.contains('collapsed'));
+  skin.setToggle('#skPlBtn', !$('plWindow').classList.contains('collapsed'));
+
+  skVisualizer.setColors(skin.viscolor);
+  skin.renderTime($('skTime'), formatTime(player.currentTime));
+  skin.renderText($('skKbps'), '320');
+  skin.renderText($('skKhz'), '44');
+  scaleClassic();
+  if (!player.paused) { visualizer.stop(); skVisualizer.start(); }
+}
+
+function removeSkin() {
+  skinned = false;
+  document.documentElement.classList.remove('skinned');
+  $('skWrap').hidden = true;
+  $('removeSkinBtn').hidden = true;
+  $('loadSkinBtn').textContent = '🎨 LOAD .WSZ SKIN';
+  skVisualizer.stop();
+  if (!player.paused) visualizer.start();
+}
+
+function updateVolumeBg() {
+  const frame = Math.round((parseInt($('skVolume').value, 10) / 100) * 27);
+  $('skVolume').style.backgroundPosition = `0 -${frame * 15}px`;
+  const bal = Math.abs(parseInt($('skBalance').value, 10));
+  const bframe = Math.round((bal / 100) * 27);
+  $('skBalance').style.backgroundPosition = `0 -${bframe * 15}px`;
+}
+$('skVolume').addEventListener('input', updateVolumeBg);
+$('skBalance').addEventListener('input', updateVolumeBg);
+
+function scaleClassic() {
+  const wrap = document.querySelector('.winamp');
+  const avail = Math.min(wrap.clientWidth - 16, 460);
+  const scale = Math.max(1, Math.min(2.4, avail / 275));
+  document.documentElement.style.setProperty('--sk-scale', scale.toFixed(3));
+  $('skWrap').style.height = `${Math.ceil(116 * scale)}px`;
+}
+window.addEventListener('resize', () => { if (skinned) scaleClassic(); });
+
+/* ---------------- About modal ---------------- */
+
+$('aboutBtn').addEventListener('click', () => { $('aboutModal').hidden = false; });
+$('aboutClose').addEventListener('click', () => { $('aboutModal').hidden = true; });
+$('aboutModal').addEventListener('click', (e) => { if (e.target === $('aboutModal')) $('aboutModal').hidden = true; });
+
+/* ---------------- Media Session (lock-screen controls) ---------------- */
+
+if ('mediaSession' in navigator) {
+  navigator.mediaSession.setActionHandler('play', () => player.play());
+  navigator.mediaSession.setActionHandler('pause', () => player.pause());
+  navigator.mediaSession.setActionHandler('previoustrack', () => { const t = playlist.prev(); if (t) loadAndPlay(t); });
+  navigator.mediaSession.setActionHandler('nexttrack', () => { const t = playlist.next(); if (t) loadAndPlay(t); });
+  player.addEventListener('play', () => {
+    if (playlist.current) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: playlist.current.title,
+        artist: 'Winamp Mobile',
+        album: 'Local Library',
+      });
+    }
+  });
+}
+
+/* ---------------- Keyboard shortcuts (desktop testing) ---------------- */
+
+window.addEventListener('keydown', (e) => {
+  if (e.target.matches('input, select, textarea')) return;
+  switch (e.key) {
+    case ' ': case 'x': e.preventDefault(); player.toggle(); break;
+    case 'b': case 'ArrowRight': { const t = playlist.next(); if (t) loadAndPlay(t); break; }
+    case 'z': case 'ArrowLeft':  { const t = playlist.prev(); if (t) loadAndPlay(t); break; }
+    case 'v': player.stop(); updatePlayingState(); break;
+  }
+});
+
+/* ---------------- Service worker (PWA offline) ---------------- */
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+/* Initial paint */
+playlist.render();
+visualizer._clear();

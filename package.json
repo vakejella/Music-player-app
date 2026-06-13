@@ -1,0 +1,21 @@
+{
+  "name": "winamp-mobile",
+  "version": "1.0.0",
+  "description": "A classic Winamp-style music player for mobile, built as an installable PWA.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
+    "icons": "node icons/make-icons.mjs",
+    "test": "node test/ids.test.mjs && node test/wsz.test.mjs"
+  },
+  "keywords": [
+    "winamp",
+    "music",
+    "player",
+    "pwa",
+    "mobile",
+    "web-audio"
+  ],
+  "license": "MIT"
+}
