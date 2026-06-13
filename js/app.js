@@ -190,6 +190,11 @@ bind('shuffleBtn', toggleShuffle); bind('skShuffle', toggleShuffle);
 bind('repeatBtn', toggleRepeat);   bind('skRepeat', toggleRepeat);
 
 function toggleEqWindow() {
+  if (skinned && skin.hasEq()) {
+    const hidden = $('skEqWrap').hidden = !$('skEqWrap').hidden;
+    skin.setToggle('#skEqBtn', !hidden);
+    return;
+  }
   const collapsed = $('eqWindow').classList.toggle('collapsed');
   $('eqToggle').classList.toggle('active', !collapsed);
   skin.setToggle('#skEqBtn', !collapsed);
@@ -268,6 +273,42 @@ window.addEventListener('drop', (e) => {
   if (audio.length) addFiles(audio);
 });
 
+/* ---------------- Classic-skin equalizer (eqmain.bmp) ---------------- */
+// 11 vertical sliders (preamp + 10 bands) overlaid on the eqmain background.
+const SK_EQ_X = [21, 78, 96, 114, 132, 150, 168, 186, 204, 222, 240];
+const skEqSliders = SK_EQ_X.map((x, idx) => {
+  const inp = document.createElement('input');
+  inp.type = 'range';
+  inp.className = 'sk-eqs';
+  inp.min = '-12'; inp.max = '12'; inp.step = '0.5'; inp.value = '0';
+  inp.style.left = `${x}px`;
+  inp.style.top = '38px';
+  inp.setAttribute('aria-label', idx === 0 ? 'Preamp' : `EQ band ${idx}`);
+  inp.addEventListener('input', () => {
+    const target = idx === 0 ? equalizer.preampEl : equalizer.sliders[idx - 1];
+    target.value = inp.value;
+    target.dispatchEvent(new Event('input'));   // reuse the equalizer's binding
+  });
+  $('skEqWin').appendChild(inp);
+  return inp;
+});
+
+function syncSkEq() {
+  skEqSliders[0].value = equalizer.preampEl.value;
+  equalizer.sliders.forEach((s, i) => { skEqSliders[i + 1].value = s.value; });
+}
+
+const SK_PRESETS = ['flat', 'rock', 'pop', 'jazz', 'classical', 'dance', 'bass', 'treble', 'vocal'];
+let skPresetIdx = 0;
+$('skEqOn').addEventListener('click', () => $('eqOnBtn').click());
+$('skEqAuto').addEventListener('click', () => { equalizer.applyPreset('flat'); syncSkEq(); });
+$('skEqPreset').addEventListener('click', () => {
+  skPresetIdx = (skPresetIdx + 1) % SK_PRESETS.length;
+  equalizer.applyPreset(SK_PRESETS[skPresetIdx]);
+  syncSkEq();
+});
+$('eqPreset').addEventListener('change', syncSkEq);
+
 /* ---------------- Winamp skin (.wsz) loading ---------------- */
 
 const skinInput = $('skinInput');
@@ -313,6 +354,10 @@ function enterSkinnedMode() {
   skin.setToggle('#skEqBtn', !$('eqWindow').classList.contains('collapsed'));
   skin.setToggle('#skPlBtn', !$('plWindow').classList.contains('collapsed'));
 
+  // Skinned EQ window (eqmain.bmp), if the skin provides one.
+  if (skin.hasEq()) { $('skEqWrap').hidden = false; syncSkEq(); }
+  skin.setToggle('#skEqBtn', skin.hasEq() && !$('skEqWrap').hidden);
+
   skVisualizer.setColors(skin.viscolor);
   skin.renderTime($('skTime'), formatTime(player.currentTime));
   skin.renderText($('skKbps'), '320');
@@ -325,6 +370,7 @@ function removeSkin() {
   skinned = false;
   document.documentElement.classList.remove('skinned');
   $('skWrap').hidden = true;
+  $('skEqWrap').hidden = true;
   $('removeSkinBtn').hidden = true;
   $('loadSkinBtn').textContent = '🎨 LOAD .WSZ SKIN';
   skVisualizer.stop();
@@ -346,7 +392,9 @@ function scaleClassic() {
   const avail = Math.min(wrap.clientWidth - 16, 460);
   const scale = Math.max(1, Math.min(2.4, avail / 275));
   document.documentElement.style.setProperty('--sk-scale', scale.toFixed(3));
-  $('skWrap').style.height = `${Math.ceil(116 * scale)}px`;
+  const h = `${Math.ceil(116 * scale)}px`;
+  $('skWrap').style.height = h;
+  $('skEqWrap').style.height = h;
 }
 window.addEventListener('resize', () => { if (skinned) scaleClassic(); });
 

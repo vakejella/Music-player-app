@@ -528,13 +528,53 @@ input[type="range"].sk-posbar::-moz-range-thumb { width: 29px; height: 10px; bor
 input[type="range"].sk-volume::-moz-range-thumb,
 input[type="range"].sk-balance::-moz-range-thumb { width: 14px; height: 11px; border: 0; background: rgba(255,255,255,0.7); }
 
-/* When a skin is active, hide the modern main window & recolor playlist */
-html.skinned .main-window { display: none; }
-html.skinned .playlist {
-  background: var(--pl-bg, #000);
+/* Skinned EQ window — eqmain.bmp background + clean handles over it */
+.sk-eqwin { background-color: #000; }
+.sk-hot { background: transparent; cursor: pointer; }
+.sk-eq-on     { left: 14px;  top: 18px; width: 26px; height: 12px; }
+.sk-eq-auto   { left: 39px;  top: 18px; width: 33px; height: 12px; }
+.sk-eq-preset { left: 217px; top: 18px; width: 44px; height: 12px; }
+
+input[type="range"].sk-eqs {
+  -webkit-appearance: none; appearance: none;
+  writing-mode: vertical-lr; direction: rtl;
+  position: absolute;
+  width: 11px; height: 50px;
+  background: transparent; border: none; outline: none; box-shadow: none;
+  image-rendering: pixelated;
 }
+input[type="range"].sk-eqs::-webkit-slider-runnable-track {
+  -webkit-appearance: none; width: 3px; background: transparent; border: none;
+}
+input[type="range"].sk-eqs::-moz-range-track { width: 3px; background: transparent; border: none; }
+input[type="range"].sk-eqs::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 11px; height: 5px;
+  background: linear-gradient(180deg, #d8ffe2, #2e9a52);
+  border: 1px solid #062a13; border-radius: 1px;
+}
+input[type="range"].sk-eqs::-moz-range-thumb {
+  width: 11px; height: 5px;
+  background: linear-gradient(180deg, #d8ffe2, #2e9a52);
+  border: 1px solid #062a13; border-radius: 1px;
+}
+
+/* When a skin is active: hide the modern main + EQ windows, theme playlist */
+html.skinned .main-window,
+html.skinned .eq-window { display: none; }
+
+html.skinned .pl-window {
+  background: var(--pl-bg, #000);
+  border-color: #000;
+}
+html.skinned .pl-window .titlebar {
+  background: linear-gradient(180deg, #2a2a2a, #161616);
+}
+html.skinned .playlist { background: var(--pl-bg, #000); }
 html.skinned .pl-item { color: var(--pl-text, #00ff5f); }
 html.skinned .pl-item.current { color: var(--pl-current, #fff); }
+html.skinned .pl-item.current { background: var(--pl-selbg, rgba(0,255,95,0.06)); }
+html.skinned .pl-footer { background: #161616; border-top-color: #000; }
 
 /* Skin loader bar */
 .skin-bar { display: flex; gap: 6px; justify-content: center; padding: 2px; }

@@ -102,6 +102,7 @@ export class ClassicSkin {
     if (pl) applyPlEditColors(new TextDecoder().decode(pl));
 
     this._paintMain();
+    this._paintEq();
     this._paintTargets();
     document.documentElement.classList.add('skinned');
     return this;
@@ -112,6 +113,19 @@ export class ClassicSkin {
     const img = this.images.get('main.bmp');
     if (main && img) main.style.backgroundImage = `url("${img.src}")`;
   }
+
+  _paintEq() {
+    const img = this.images.get('eqmain.bmp');
+    const win = document.getElementById('skEqWin');
+    const tb = document.getElementById('skEqTitlebar');
+    if (win && img) win.style.backgroundImage = `url("${img.src}")`;
+    if (tb && img) {
+      tb.style.backgroundImage = `url("${img.src}")`;
+      tb.style.backgroundPosition = '0 -134px';   // EQ title bar sprite
+    }
+  }
+
+  hasEq() { return this.images.has('eqmain.bmp'); }
 
   _paintTargets() {
     for (const t of TARGETS) {
