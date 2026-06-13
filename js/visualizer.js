@@ -14,6 +14,7 @@ export class Visualizer {
     this.running = false;
     this._raf = null;
     this._peaks = [];     // peak-hold positions for bars
+    this.colors = null;   // optional skin viscolor palette (24 × [r,g,b])
     this._handleResize();
     window.addEventListener('resize', () => this._handleResize());
   }
@@ -29,6 +30,11 @@ export class Visualizer {
     this.W = w;
     this.H = h;
   }
+
+  /** Use a classic skin's viscolor palette (24 RGB triples). */
+  setColors(colors) { this.colors = colors && colors.length >= 24 ? colors : null; }
+
+  _rgb(i) { const c = this.colors[i]; return `rgb(${c[0]},${c[1]},${c[2]})`; }
 
   cycleMode() {
     const i = MODES.indexOf(this.mode);
@@ -54,8 +60,22 @@ export class Visualizer {
   }
 
   _clear() {
-    this.ctx.fillStyle = '#000';
+    this.ctx.fillStyle = this.colors ? this._rgb(0) : '#000';
     this.ctx.fillRect(0, 0, this.W, this.H);
+  }
+
+  _barGradient() {
+    const grad = this.ctx.createLinearGradient(0, this.H, 0, 0);
+    if (this.colors) {
+      // Skin spectrum colors live at indices 2..17 (bottom -> top).
+      for (let i = 0; i < 16; i++) grad.addColorStop(i / 15, this._rgb(2 + i));
+    } else {
+      grad.addColorStop(0.0, '#00b341');
+      grad.addColorStop(0.55, '#3cff6e');
+      grad.addColorStop(0.8, '#ffd24a');
+      grad.addColorStop(1.0, '#ff4a3c');
+    }
+    return grad;
   }
 
   _draw() {
@@ -86,20 +106,15 @@ export class Visualizer {
       const x = i * (barW + gap);
       const y = this.H - barH;
 
-      // Vertical gradient: green -> yellow -> red, the Winamp signature.
-      const grad = this.ctx.createLinearGradient(0, this.H, 0, 0);
-      grad.addColorStop(0.0, '#00b341');
-      grad.addColorStop(0.55, '#3cff6e');
-      grad.addColorStop(0.8, '#ffd24a');
-      grad.addColorStop(1.0, '#ff4a3c');
-      this.ctx.fillStyle = grad;
+      // Vertical gradient: green -> yellow -> red (or skin viscolor).
+      this.ctx.fillStyle = this._barGradient();
       this.ctx.fillRect(x, y, barW, barH);
 
       // Peak-hold dot that slowly falls.
       const peak = this._peaks[i] || 0;
       const newPeak = Math.max(barH, peak - 1.2);
       this._peaks[i] = newPeak;
-      this.ctx.fillStyle = '#d8ffe2';
+      this.ctx.fillStyle = this.colors ? this._rgb(23) : '#d8ffe2';
       this.ctx.fillRect(x, this.H - newPeak - 2, barW, 2);
     }
   }
@@ -110,9 +125,9 @@ export class Visualizer {
     analyser.getByteTimeDomainData(data);
 
     this.ctx.lineWidth = 1.5;
-    this.ctx.strokeStyle = '#3cff6e';
+    this.ctx.strokeStyle = this.colors ? this._rgb(18) : '#3cff6e';
     this.ctx.shadowColor = '#00ff5f';
-    this.ctx.shadowBlur = 4;
+    this.ctx.shadowBlur = this.colors ? 0 : 4;
     this.ctx.beginPath();
     const slice = this.W / len;
     for (let i = 0; i < len; i++) {

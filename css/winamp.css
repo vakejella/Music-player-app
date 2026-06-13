@@ -425,3 +425,104 @@ input[type="range"]::-moz-range-thumb {
 @media (min-width: 480px) {
   .winamp { padding-top: 16px; }
 }
+
+/* ===================================================================
+   CLASSIC SKIN (.wsz) — pixel-accurate 275x116 main window.
+   Geometry is fixed (classic Winamp layout); skin.js swaps graphics.
+   The whole window is scaled up by --sk-scale to fill phone width.
+   =================================================================== */
+.sk-wrap { display: flex; justify-content: center; }
+.sk-wrap[hidden] { display: none; }
+
+.sk-main {
+  position: relative;
+  width: 275px;
+  height: 116px;
+  background: #000 no-repeat;
+  background-size: 275px 116px;
+  transform: scale(var(--sk-scale, 1.5));
+  transform-origin: top center;
+  image-rendering: pixelated;
+}
+.sk-main > * {
+  position: absolute;
+  image-rendering: pixelated;
+}
+
+/* Sprite-driven buttons */
+.sk-btn, .sk-toggle, .sk-menu {
+  border: 0; padding: 0; margin: 0;
+  background-repeat: no-repeat;
+  background-position: var(--sx, 0) var(--sy, 0);
+  cursor: pointer;
+  image-rendering: pixelated;
+}
+.sk-btn:active { background-position: var(--ax, var(--sx)) var(--ay, var(--sy)); }
+
+.sk-titlebar { left: 0; top: 0; width: 275px; height: 14px; background-repeat: no-repeat; background-position: var(--sx) var(--sy); }
+.sk-menu     { left: 6px; top: 3px; width: 9px; height: 9px; background: transparent; }
+
+.sk-vis   { left: 24px;  top: 43px; width: 76px;  height: 16px; }
+.sk-time  { left: 36px;  top: 26px; width: 63px;  height: 13px; }
+.sk-title { left: 111px; top: 27px; width: 153px; height: 6px; overflow: hidden; }
+.sk-kbps  { left: 111px; top: 43px; width: 15px;  height: 6px; }
+.sk-khz   { left: 156px; top: 43px; width: 15px;  height: 6px; }
+
+.sk-prev  { left: 16px;  top: 88px; width: 23px; height: 18px; }
+.sk-play  { left: 39px;  top: 88px; width: 23px; height: 18px; }
+.sk-pause { left: 62px;  top: 88px; width: 23px; height: 18px; }
+.sk-stop  { left: 85px;  top: 88px; width: 23px; height: 18px; }
+.sk-next  { left: 108px; top: 88px; width: 22px; height: 18px; }
+.sk-eject { left: 136px; top: 89px; width: 22px; height: 16px; }
+
+.sk-shuffle { left: 164px; top: 89px; width: 47px; height: 15px; }
+.sk-repeat  { left: 210px; top: 89px; width: 28px; height: 15px; }
+.sk-eq      { left: 219px; top: 58px; width: 23px; height: 12px; }
+.sk-pl      { left: 242px; top: 58px; width: 23px; height: 12px; }
+
+/* Skin sliders — invisible track, sprite thumb from the skin bmp */
+.sk-posbar, .sk-volume, .sk-balance {
+  -webkit-appearance: none; appearance: none;
+  background: no-repeat; background-color: transparent;
+  outline: none; image-rendering: pixelated;
+}
+.sk-posbar  { left: 16px;  top: 72px; width: 248px; height: 10px; }
+.sk-volume  { left: 107px; top: 57px; width: 68px;  height: 13px; }
+.sk-balance { left: 177px; top: 57px; width: 38px;  height: 13px; }
+
+.sk-posbar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 29px; height: 10px;
+  background-image: var(--posbar-img);
+  background-position: -248px 0; background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+.sk-volume::-webkit-slider-thumb, .sk-balance::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 11px;
+  background-image: var(--thumb-img);
+  background-position: -15px -422px; background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+.sk-posbar::-moz-range-thumb { width: 29px; height: 10px; border: 0; background: rgba(255,255,255,0.6); }
+.sk-volume::-moz-range-thumb, .sk-balance::-moz-range-thumb { width: 14px; height: 11px; border: 0; background: rgba(255,255,255,0.6); }
+
+/* When a skin is active, hide the modern main window & recolor playlist */
+html.skinned .main-window { display: none; }
+html.skinned .playlist {
+  background: var(--pl-bg, #000);
+}
+html.skinned .pl-item { color: var(--pl-text, #00ff5f); }
+html.skinned .pl-item.current { color: var(--pl-current, #fff); }
+
+/* Skin loader bar */
+.skin-bar { display: flex; gap: 6px; justify-content: center; padding: 2px; }
+.skin-load-btn {
+  font-family: var(--font-pixel); font-size: 10px; font-weight: bold;
+  color: var(--wa-text);
+  background: linear-gradient(180deg, var(--wa-panel-2), #2b2b38);
+  border: 1px solid var(--wa-bevel-lo); border-radius: 4px;
+  padding: 8px 12px; cursor: pointer;
+  box-shadow: inset 1px 1px 0 var(--wa-bevel-hi);
+}
+.skin-load-btn:active { box-shadow: inset -1px -1px 0 var(--wa-bevel-hi); }

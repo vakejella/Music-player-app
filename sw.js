@@ -10,6 +10,8 @@ const ASSETS = [
   './js/equalizer.js',
   './js/playlist.js',
   './js/demo.js',
+  './js/wsz.js',
+  './js/skin.js',
   './manifest.webmanifest',
   './icons/icon.svg',
 ];

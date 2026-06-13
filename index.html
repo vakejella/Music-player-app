@@ -88,6 +88,36 @@
       </div>
     </section>
 
+    <!-- ============ CLASSIC SKINNED MAIN WINDOW (shown when a .wsz is loaded) ============ -->
+    <section class="sk-wrap" id="skWrap" hidden aria-label="Classic Winamp skin">
+      <div class="sk-main" id="skMain">
+        <div class="sk-titlebar" id="skTitlebar"></div>
+        <button class="sk-menu" id="skMenuBtn" title="Menu / load skin" aria-label="Menu"></button>
+
+        <canvas class="sk-vis" id="skVis" width="76" height="16"></canvas>
+        <canvas class="sk-time" id="skTime" width="63" height="13"></canvas>
+        <canvas class="sk-title" id="skTitle" width="153" height="6"></canvas>
+        <canvas class="sk-kbps" id="skKbps" width="15" height="6"></canvas>
+        <canvas class="sk-khz" id="skKhz" width="15" height="6"></canvas>
+
+        <input type="range" class="sk-posbar" id="skPosbar" min="0" max="1000" value="0" aria-label="Seek" />
+        <input type="range" class="sk-volume" id="skVolume" min="0" max="100" value="80" aria-label="Volume" />
+        <input type="range" class="sk-balance" id="skBalance" min="-100" max="100" value="0" aria-label="Balance" />
+
+        <button class="sk-btn sk-prev"  id="skPrev"  aria-label="Previous"></button>
+        <button class="sk-btn sk-play"  id="skPlay"  aria-label="Play"></button>
+        <button class="sk-btn sk-pause" id="skPause" aria-label="Pause"></button>
+        <button class="sk-btn sk-stop"  id="skStop"  aria-label="Stop"></button>
+        <button class="sk-btn sk-next"  id="skNext"  aria-label="Next"></button>
+        <button class="sk-btn sk-eject" id="skEject" aria-label="Open files"></button>
+
+        <button class="sk-toggle sk-shuffle" id="skShuffle" aria-label="Shuffle"></button>
+        <button class="sk-toggle sk-repeat"  id="skRepeat"  aria-label="Repeat"></button>
+        <button class="sk-toggle sk-eq" id="skEqBtn" aria-label="Equalizer"></button>
+        <button class="sk-toggle sk-pl" id="skPlBtn" aria-label="Playlist"></button>
+      </div>
+    </section>
+
     <!-- ============ EQUALIZER WINDOW ============ -->
     <section class="window eq-window" id="eqWindow">
       <div class="titlebar">
@@ -137,13 +167,19 @@
       </div>
     </section>
 
+    <div class="skin-bar">
+      <button class="skin-load-btn" id="loadSkinBtn">🎨 LOAD .WSZ SKIN</button>
+      <button class="skin-load-btn" id="removeSkinBtn" hidden>↩ MODERN UI</button>
+    </div>
+
     <footer class="credits">
       Winamp Mobile · It really whips the llama's ass 🦙
     </footer>
   </div>
 
-  <!-- Hidden file input -->
+  <!-- Hidden file inputs -->
   <input type="file" id="fileInput" accept="audio/*" multiple hidden />
+  <input type="file" id="skinInput" accept=".wsz,.zip,application/zip" hidden />
 
   <!-- About modal -->
   <div class="modal" id="aboutModal" hidden>
