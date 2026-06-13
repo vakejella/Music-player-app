@@ -438,8 +438,11 @@ input[type="range"]::-moz-range-thumb {
   position: relative;
   width: 275px;
   height: 116px;
-  background: #000 no-repeat;
-  background-size: 275px 116px;
+  background: #000 no-repeat 0 0;
+  /* Natural size + top-left: skin backgrounds like eqmain.bmp are TALLER than
+     116px (they stack title-bar/slider sprites below the window). Stretching
+     to 116px would squash them, so we only reveal the top 275x116 region. */
+  background-size: auto;
   transform: scale(var(--sk-scale, 1.5));
   transform-origin: top center;
   image-rendering: pixelated;
