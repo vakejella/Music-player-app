@@ -106,4 +106,24 @@ const xs=[21,78,96,114,132,150,168,186,204,222,240];
 for (const x of xs) rect(eq, x, 60, 11, 5, 216, 255, 226);
 writeFileSync((process.argv[3]||'.')+'/preview_eq.png', png(scale(eq, 3)));
 
-console.log('wrote /tmp/preview_main.png and /tmp/preview_eq.png');
+// ---- PLAYLIST window (pledit.bmp tiled to 275 wide) ----
+function tileX(d,s,sx,sy,sw,sh,dx,dy,dw){for(let x=0;x<dw;x+=sw)blit(d,s,sx,sy,Math.min(sw,dw-x),sh,dx+x,dy);}
+function tileY(d,s,sx,sy,sw,sh,dx,dy,dh){for(let y=0;y<dh;y+=sh)blit(d,s,sx,sy,sw,Math.min(sh,dh-y),dx,dy+y);}
+if (files.get('pledit.bmp')) {
+  const p = decodeBMP(files.get('pledit.bmp'));
+  const W = 275, bodyH = 92, H = 20 + bodyH + 38, pl = canvas(W, H);
+  rect(pl, 12, 20, 243, bodyH, 0, 0, 0);                     // list bg
+  const tX = Math.round((W - 100) / 2);
+  blit(pl, p, 0, 0, 25, 20, 0, 0);                            // top-left
+  tileX(pl, p, 127, 0, 25, 20, 25, 0, tX - 25);               // left fill
+  blit(pl, p, 26, 0, 100, 20, tX, 0);                         // title
+  tileX(pl, p, 127, 0, 25, 20, tX + 100, 0, W - 25 - (tX + 100)); // right fill
+  blit(pl, p, 153, 0, 25, 20, W - 25, 0);                     // top-right
+  tileY(pl, p, 0, 42, 12, 29, 0, 20, bodyH);                  // left border
+  tileY(pl, p, 31, 42, 20, 29, W - 20, 20, bodyH);            // right border
+  blit(pl, p, 0, 72, 125, 38, 0, 20 + bodyH);                 // bottom-left
+  blit(pl, p, 126, 72, 150, 38, 125, 20 + bodyH);             // bottom-right
+  writeFileSync((process.argv[3]||'.')+'/preview_pl.png', png(scale(pl, 3)));
+}
+
+console.log('wrote preview_main.png, preview_eq.png, preview_pl.png');

@@ -48,16 +48,27 @@ dependencies) and maps each sprite to the classic 275×116 main-window layout
 | `numbers.bmp` / `nums_ex.bmp` | the LCD time digits |
 | `text.bmp` | the scrolling track-title bitmap font |
 | `posbar.bmp`, `volume.bmp`, `balance.bmp` | slider thumbs & tracks |
+| `eqmain.bmp` | the equalizer window (background, title bar, band sliders) |
+| `pledit.bmp` | the playlist window (tiled title bar, borders, bottom bar) |
 | `viscolor.txt` | the spectrum-analyzer color palette |
 | `pledit.txt` | playlist text/background colors |
 
 Where to get skins: the [Winamp Skin Museum](https://skins.webamp.org) has
 thousands of free `.wsz` files — download one and load it.
 
-> **Coverage:** the **main window** is rendered pixel-for-pixel from the skin.
-> The equalizer and playlist windows keep the app's own layout but adopt the
-> skin's `viscolor`/`pledit` palette. Tap **↩ MODERN UI** to return to the
+> **Coverage:** the **main**, **equalizer**, and **playlist** windows are all
+> rendered from the skin's sprites. Tap **↩ MODERN UI** to return to the
 > default look.
+
+### Verifying skins offline
+
+`tools/render-skin.mjs` is a dependency-free Node BMP decoder + compositor that
+renders a `.wsz`'s main, EQ, and playlist windows to PNG, so skin coordinates
+can be checked without a browser:
+
+```bash
+node tools/render-skin.mjs path/to/skin.wsz ./out   # writes preview_*.png
+```
 
 ## Run as a web app
 
@@ -74,7 +85,7 @@ and **Add to Home Screen** to install it as a standalone app.
 ## Android APK
 
 A prebuilt debug APK is committed at
-[`releases/winamp-mobile-v1.0.3.apk`](releases/winamp-mobile-v1.0.3.apk) — download
+[`releases/winamp-mobile-v1.0.4.apk`](releases/winamp-mobile-v1.0.4.apk) — download
 it, enable "Install unknown apps" on your phone, and open it.
 
 To build it yourself: the `android/` directory wraps the web app in a native

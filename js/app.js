@@ -200,6 +200,11 @@ function toggleEqWindow() {
   skin.setToggle('#skEqBtn', !collapsed);
 }
 function togglePlWindow() {
+  if (skinned && skin.hasPl()) {
+    const hidden = $('skPlWrap').hidden = !$('skPlWrap').hidden;
+    skin.setToggle('#skPlBtn', !hidden);
+    return;
+  }
   const collapsed = $('plWindow').classList.toggle('collapsed');
   $('plToggle').classList.toggle('active', !collapsed);
   skin.setToggle('#skPlBtn', !collapsed);
@@ -225,6 +230,12 @@ playlist.addEventListener('change', () => playlist.render());
 
 $('addBtn').addEventListener('click', openFiles);
 $('clearBtn').addEventListener('click', () => { player.stop(); playlist.clear(); updatePlayingState(); $('trackTitle').textContent = 'Winamp Mobile — load a track to begin ★'; });
+
+// Mirror the playlist into the skinned playlist window + its file buttons.
+playlist.addTarget($('skPlList'));
+$('skPlAdd').addEventListener('click', openFiles);
+$('skPlEject').addEventListener('click', openFiles);
+$('skPlRem').addEventListener('click', () => $('clearBtn').click());
 $('addDemoBtn').addEventListener('click', () => {
   const wasEmpty = playlist.tracks.length === 0;
   playlist.addMany(generateDemoTracks());
@@ -358,6 +369,10 @@ function enterSkinnedMode() {
   if (skin.hasEq()) { $('skEqWrap').hidden = false; syncSkEq(); }
   skin.setToggle('#skEqBtn', skin.hasEq() && !$('skEqWrap').hidden);
 
+  // Skinned playlist window (pledit.bmp).
+  if (skin.hasPl()) { $('skPlWrap').hidden = false; }
+  skin.setToggle('#skPlBtn', skin.hasPl() && !$('skPlWrap').hidden);
+
   skVisualizer.setColors(skin.viscolor);
   skin.renderTime($('skTime'), formatTime(player.currentTime));
   skin.renderText($('skKbps'), '320');
@@ -371,6 +386,7 @@ function removeSkin() {
   document.documentElement.classList.remove('skinned');
   $('skWrap').hidden = true;
   $('skEqWrap').hidden = true;
+  $('skPlWrap').hidden = true;
   $('removeSkinBtn').hidden = true;
   $('loadSkinBtn').textContent = '🎨 LOAD .WSZ SKIN';
   skVisualizer.stop();
@@ -395,6 +411,7 @@ function scaleClassic() {
   const h = `${Math.ceil(116 * scale)}px`;
   $('skWrap').style.height = h;
   $('skEqWrap').style.height = h;
+  $('skPlWrap').style.height = `${Math.ceil(150 * scale)}px`;
 }
 window.addEventListener('resize', () => { if (skinned) scaleClassic(); });
 

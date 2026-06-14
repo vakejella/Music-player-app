@@ -21,7 +21,16 @@ export class Playlist extends EventTarget {
     this.repeat = 'none';    // 'none' | 'one' | 'all'
     this._nextId = 1;
 
-    this.listEl.addEventListener('click', (e) => this._onClick(e));
+    this.targets = [listEl];                 // all elements that render the list
+    listEl.addEventListener('click', (e) => this._onClick(e));
+  }
+
+  /** Render the same list into an additional element (e.g. a skinned window). */
+  addTarget(el) {
+    if (!el || this.targets.includes(el)) return;
+    this.targets.push(el);
+    el.addEventListener('click', (e) => this._onClick(e));
+    this.render();
   }
 
   add(track) {
@@ -126,18 +135,15 @@ export class Playlist extends EventTarget {
   }
 
   render() {
-    this.listEl.innerHTML = '';
-    this.tracks.forEach((t, i) => {
-      const li = document.createElement('li');
-      li.className = 'pl-item' + (i === this.currentIndex ? ' current' : '');
-      li.dataset.id = String(t.id);
-      li.innerHTML = `
-        <span class="pl-num">${i + 1}.</span>
-        <span class="pl-name">${escapeHtml(t.title)}</span>
-        <span class="pl-time">${t.duration ? formatTime(t.duration) : '--:--'}</span>
-        <button class="pl-remove" data-id="${t.id}" aria-label="Remove">✕</button>`;
-      this.listEl.appendChild(li);
-    });
+    const html = this.tracks.map((t, i) => (
+      `<li class="pl-item${i === this.currentIndex ? ' current' : ''}" data-id="${t.id}">` +
+        `<span class="pl-num">${i + 1}.</span>` +
+        `<span class="pl-name">${escapeHtml(t.title)}</span>` +
+        `<span class="pl-time">${t.duration ? formatTime(t.duration) : '--:--'}</span>` +
+        `<button class="pl-remove" data-id="${t.id}" aria-label="Remove">✕</button>` +
+      `</li>`
+    )).join('');
+    this.targets.forEach((el) => { el.innerHTML = html; });
 
     if (this.countEl) {
       this.countEl.textContent = `${this.tracks.length} item${this.tracks.length === 1 ? '' : 's'}`;

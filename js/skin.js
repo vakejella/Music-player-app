@@ -103,10 +103,54 @@ export class ClassicSkin {
 
     this._paintMain();
     this._paintEq();
+    this._paintPlaylist();
     this._paintTargets();
     document.documentElement.classList.add('skinned');
     return this;
   }
+
+  /** Cut a single sprite out of a sheet so it can be tiled with background-repeat. */
+  _extractSprite(name, x, y, w, h) {
+    const img = this.images.get(name);
+    if (!img) return '';
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
+    return c.toDataURL('image/png');
+  }
+
+  _paintPlaylist() {
+    const img = this.images.get('pledit.bmp');
+    if (!img) return;
+    const sheet = `url("${img.src}")`;
+    const place = (id, x, y) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.backgroundImage = sheet;
+      el.style.backgroundPosition = `-${x}px -${y}px`;
+    };
+    place('skPlTL', 0, 0);       // top-left corner
+    place('skPlTitle', 26, 0);   // centre title ("PLAYLIST")
+    place('skPlTR', 153, 0);     // top-right corner (window buttons)
+    place('skPlBL', 0, 72);      // bottom-left corner (file buttons)
+    place('skPlBR', 126, 72);    // bottom-right corner (transport + load)
+
+    const topTile = this._extractSprite('pledit.bmp', 127, 0, 25, 20);
+    document.querySelectorAll('.skpl-tfill').forEach((e) => {
+      e.style.backgroundImage = `url("${topTile}")`;
+      e.style.backgroundRepeat = 'repeat-x';
+    });
+    const leftTile = this._extractSprite('pledit.bmp', 0, 42, 12, 29);
+    const lEl = document.getElementById('skPlLeft');
+    if (lEl) { lEl.style.backgroundImage = `url("${leftTile}")`; lEl.style.backgroundRepeat = 'repeat-y'; }
+    const rightTile = this._extractSprite('pledit.bmp', 31, 42, 20, 29);
+    const rEl = document.getElementById('skPlRight');
+    if (rEl) { rEl.style.backgroundImage = `url("${rightTile}")`; rEl.style.backgroundRepeat = 'repeat-y'; }
+  }
+
+  hasPl() { return this.images.has('pledit.bmp'); }
 
   _paintMain() {
     const main = document.getElementById('skMain');

@@ -562,22 +562,60 @@ input[type="range"].sk-eqs::-moz-range-thumb {
   border: 1px solid #062a13; border-radius: 1px;
 }
 
-/* When a skin is active: hide the modern main + EQ windows, theme playlist */
-html.skinned .main-window,
-html.skinned .eq-window { display: none; }
+/* Skinned playlist window — tiled from pledit.bmp (275 wide) */
+.sk-plwin {
+  position: relative;
+  width: 275px;
+  height: 150px;            /* 20 title + 92 body + 38 bottom */
+  background: var(--pl-bg, #000) no-repeat;
+  transform: scale(var(--sk-scale, 1.5));
+  transform-origin: top center;
+  image-rendering: pixelated;
+  overflow: hidden;
+}
+.sk-plwin > * { position: absolute; image-rendering: pixelated; background-repeat: no-repeat; }
 
-html.skinned .pl-window {
+.skpl-tl    { left: 0;     top: 0;   width: 25px;  height: 20px; }
+.skpl-tf-l  { left: 25px;  top: 0;   width: 63px;  height: 20px; }
+.skpl-title { left: 88px;  top: 0;   width: 100px; height: 20px; }
+.skpl-tf-r  { left: 188px; top: 0;   width: 62px;  height: 20px; }
+.skpl-tr    { left: 250px; top: 0;   width: 25px;  height: 20px; }
+
+.skpl-left  { left: 0;     top: 20px; width: 12px;  height: 92px; }
+.skpl-right { left: 255px; top: 20px; width: 20px;  height: 92px; }
+.skpl-list  {
+  left: 12px; top: 20px; width: 243px; height: 92px;
+  margin: 0; padding: 2px 4px; list-style: none;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
   background: var(--pl-bg, #000);
-  border-color: #000;
+  font-size: 8px; line-height: 1.1;
 }
-html.skinned .pl-window .titlebar {
-  background: linear-gradient(180deg, #2a2a2a, #161616);
+.skpl-list .pl-item { padding: 2px 2px; font-size: 8px; border-bottom: 0; gap: 4px; }
+.skpl-list .pl-num { width: 16px; }
+.skpl-list:empty::after {
+  content: "Tap + on the bottom bar (or EJECT) to add tracks";
+  display: block; color: var(--pl-text, #00cf90); opacity: 0.6;
+  font-size: 8px; text-align: center; padding: 16px 6px;
 }
-html.skinned .playlist { background: var(--pl-bg, #000); }
-html.skinned .pl-item { color: var(--pl-text, #00ff5f); }
-html.skinned .pl-item.current { color: var(--pl-current, #fff); }
-html.skinned .pl-item.current { background: var(--pl-selbg, rgba(0,255,95,0.06)); }
-html.skinned .pl-footer { background: #161616; border-top-color: #000; }
+
+.skpl-bl { left: 0;     top: 112px; width: 125px; height: 38px; }
+.skpl-br { left: 125px; top: 112px; width: 150px; height: 38px; }
+
+.skpl-hot { background: transparent; border: 0; cursor: pointer; }
+.skpl-add   { left: 7px;   top: 116px; width: 23px; height: 18px; }
+.skpl-rem   { left: 33px;  top: 116px; width: 23px; height: 18px; }
+.skpl-eject { left: 243px; top: 116px; width: 26px; height: 26px; }
+
+/* When a skin is active: hide the modern main / EQ / playlist windows */
+html.skinned .main-window,
+html.skinned .eq-window,
+html.skinned .pl-window { display: none; }
+html.skinned .pl-item { color: var(--pl-text, #00cf90); }
+html.skinned .pl-item.current {
+  color: var(--pl-current, #fff);
+  background: var(--pl-selbg, rgba(0,207,144,0.12));
+  text-shadow: none;
+}
 
 /* Skin loader bar */
 .skin-bar { display: flex; gap: 6px; justify-content: center; padding: 2px; }
