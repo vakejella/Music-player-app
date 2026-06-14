@@ -101,9 +101,9 @@ writeFileSync((process.argv[3]||'.')+'/preview_main.png', png(scale(main, 3)));
 const eq = canvas(275, 116);
 blit(eq, imgs['eqmain.bmp'], 0, 0, 275, 116, 0, 0);                      // top region = EQ bg
 blit(eq, imgs['eqmain.bmp'], 0, 134, 275, 14, 0, 0);                     // EQ titlebar sprite -> top
-// EQ slider handles (preamp + 10 bands) at x list, y travel 38..88, handle at mid
+// EQ slider handles (preamp + 10 bands); at 0 dB the handle centres on the groove (~y68)
 const xs=[21,78,96,114,132,150,168,186,204,222,240];
-for (const x of xs) rect(eq, x, 60, 11, 5, 216, 255, 226);
+for (const x of xs) { rect(eq, x+1, 64, 13, 7, 205,205,205); rect(eq, x+1, 67, 13, 1, 58,58,58); }
 writeFileSync((process.argv[3]||'.')+'/preview_eq.png', png(scale(eq, 3)));
 
 // ---- PLAYLIST window (pledit.bmp tiled to 275 wide) ----

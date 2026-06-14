@@ -542,7 +542,7 @@ input[type="range"].sk-eqs {
   -webkit-appearance: none; appearance: none;
   writing-mode: vertical-lr; direction: rtl;
   position: absolute;
-  width: 11px; height: 50px;
+  width: 14px; height: 56px;
   background: transparent; border: none; outline: none; box-shadow: none;
   image-rendering: pixelated;
 }
@@ -552,14 +552,14 @@ input[type="range"].sk-eqs::-webkit-slider-runnable-track {
 input[type="range"].sk-eqs::-moz-range-track { width: 3px; background: transparent; border: none; }
 input[type="range"].sk-eqs::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 11px; height: 5px;
-  background: linear-gradient(180deg, #d8ffe2, #2e9a52);
-  border: 1px solid #062a13; border-radius: 1px;
+  width: 13px; height: 7px;
+  background: linear-gradient(180deg, #ededed 0%, #cfcfcf 42%, #3a3a3a 42%, #3a3a3a 58%, #c0c0c0 58%, #8c8c8c 100%);
+  border: 1px solid #222; border-radius: 1px;
 }
 input[type="range"].sk-eqs::-moz-range-thumb {
-  width: 11px; height: 5px;
-  background: linear-gradient(180deg, #d8ffe2, #2e9a52);
-  border: 1px solid #062a13; border-radius: 1px;
+  width: 13px; height: 7px;
+  background: linear-gradient(180deg, #ededed 0%, #cfcfcf 42%, #3a3a3a 42%, #3a3a3a 58%, #c0c0c0 58%, #8c8c8c 100%);
+  border: 1px solid #222; border-radius: 1px;
 }
 
 /* Skinned playlist window — tiled from pledit.bmp (275 wide) */

@@ -293,7 +293,7 @@ const skEqSliders = SK_EQ_X.map((x, idx) => {
   inp.className = 'sk-eqs';
   inp.min = '-12'; inp.max = '12'; inp.step = '0.5'; inp.value = '0';
   inp.style.left = `${x}px`;
-  inp.style.top = '38px';
+  inp.style.top = '40px';
   inp.setAttribute('aria-label', idx === 0 ? 'Preamp' : `EQ band ${idx}`);
   inp.addEventListener('input', () => {
     const target = idx === 0 ? equalizer.preampEl : equalizer.sliders[idx - 1];
