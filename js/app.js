@@ -348,14 +348,14 @@ function enterSkinnedMode() {
   $('removeSkinBtn').hidden = false;
   $('loadSkinBtn').textContent = '🎨 CHANGE SKIN';
 
-  // Slider sprites pulled straight from the skin's bitmaps.
+  // Slider thumbs pulled from the skin's bitmaps. The volume/balance BMPs
+  // surround their bars with a transparency-key color (blue here), so we do
+  // NOT use them as the track background — main.bmp already draws the slider
+  // channels; we only take the thumb sprite from them.
   const url = (n) => { const i = skin.images.get(n); return i ? `url("${i.src}")` : ''; };
   $('skPosbar').style.setProperty('--posbar-img', url('posbar.bmp'));
-  $('skVolume').style.backgroundImage = url('volume.bmp');
   $('skVolume').style.setProperty('--thumb-img', url('volume.bmp'));
-  $('skBalance').style.backgroundImage = url('balance.bmp');
   $('skBalance').style.setProperty('--thumb-img', url('balance.bmp'));
-  updateVolumeBg();
 
   // Mirror current state onto the skinned controls.
   $('skVolume').value = $('volume').value;
@@ -392,16 +392,6 @@ function removeSkin() {
   skVisualizer.stop();
   if (!player.paused) visualizer.start();
 }
-
-function updateVolumeBg() {
-  const frame = Math.round((parseInt($('skVolume').value, 10) / 100) * 27);
-  $('skVolume').style.backgroundPosition = `0 -${frame * 15}px`;
-  const bal = Math.abs(parseInt($('skBalance').value, 10));
-  const bframe = Math.round((bal / 100) * 27);
-  $('skBalance').style.backgroundPosition = `0 -${bframe * 15}px`;
-}
-$('skVolume').addEventListener('input', updateVolumeBg);
-$('skBalance').addEventListener('input', updateVolumeBg);
 
 function scaleClassic() {
   const wrap = document.querySelector('.winamp');
