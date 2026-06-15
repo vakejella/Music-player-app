@@ -235,6 +235,22 @@ export class ClassicSkin {
     return true;
   }
 
+  /** Draw short, non-scrolling text once (e.g. the kbps/khz readouts). */
+  renderTextStatic(canvas, text) {
+    const img = this.images.get('text.bmp');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!img) return;
+    let dx = 0;
+    for (const ch of text) {
+      if (dx + CHAR_W > canvas.width) break;
+      const [c, r] = glyph(ch);
+      ctx.drawImage(img, c * CHAR_W, r * CHAR_H, CHAR_W, CHAR_H, dx, 0, CHAR_W, CHAR_H);
+      dx += CHAR_W;
+    }
+  }
+
   hasFont() { return this.images.has('text.bmp'); }
 }
 

@@ -27,6 +27,8 @@ jobs:
         run: node test/ids.test.mjs
       - name: Test .wsz skin parser
         run: node test/wsz.test.mjs
+      - name: Test cover-art extractor
+        run: node test/coverart.test.mjs
 
   android:
     name: Android APK

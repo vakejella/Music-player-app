@@ -370,6 +370,33 @@ input[type="range"]::-moz-range-thumb {
 .pl-btn:active { box-shadow: inset -1px -1px 0 var(--wa-bevel-hi); }
 .pl-total { margin-left: auto; }
 
+/* ---------- Cover art window ---------- */
+.art-body {
+  background: var(--wa-lcd-bg);
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+.cover-art {
+  max-width: 100%;
+  max-height: 260px;
+  border: 1px solid var(--wa-bevel-lo);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+  image-rendering: auto;
+}
+.art-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--wa-text-dim);
+}
+.art-icon { font-size: 52px; opacity: 0.5; }
+.art-caption { font-size: 10px; letter-spacing: 1px; }
+.art-window.collapsed .art-body { display: none; }
+
 /* ---------- Credits ---------- */
 .credits { text-align: center; font-size: 9px; color: var(--wa-text-dim); padding: 4px; }
 

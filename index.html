@@ -84,6 +84,7 @@
           <button class="toggle" id="repeatBtn" title="Repeat">REP</button>
           <button class="toggle active" id="eqToggle" title="Equalizer">EQ</button>
           <button class="toggle active" id="plToggle" title="Playlist">PL</button>
+          <button class="toggle active" id="artToggle" title="Cover art">ART</button>
         </div>
       </div>
     </section>
@@ -200,6 +201,23 @@
       </div>
     </section>
 
+    <!-- ============ COVER ART WINDOW ============ -->
+    <section class="window art-window" id="artWindow">
+      <div class="titlebar">
+        <span class="title-text">COVER ART</span>
+        <div class="titlebar-buttons">
+          <button class="tb-btn" id="artSetBtn" title="Set cover image">SET</button>
+        </div>
+      </div>
+      <div class="art-body">
+        <img id="coverArt" class="cover-art" alt="Album cover art" hidden />
+        <div class="art-placeholder" id="artPlaceholder">
+          <span class="art-icon">🎵</span>
+          <span class="art-caption">No cover art</span>
+        </div>
+      </div>
+    </section>
+
     <div class="skin-bar">
       <button class="skin-load-btn" id="loadSkinBtn">🎨 LOAD .WSZ SKIN</button>
       <button class="skin-load-btn" id="removeSkinBtn" hidden>↩ MODERN UI</button>
@@ -212,6 +230,7 @@
 
   <!-- Hidden file inputs -->
   <input type="file" id="fileInput" accept="audio/*" multiple hidden />
+  <input type="file" id="coverInput" accept="image/*" hidden />
   <input type="file" id="skinInput" accept=".wsz,.zip,application/zip" hidden />
 
   <!-- About modal -->

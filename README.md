@@ -15,6 +15,8 @@ installable **Progressive Web App**. It really whips the llama's ass.
   9 presets (Rock, Pop, Jazz, Dance, Bass Boost, and more).
 - **📃 Playlist editor** — add files, reorder-free tap-to-play, per-track remove,
   shuffle and repeat (none / all / one).
+- **🖼️ Cover art** — reads embedded album art (ID3v2 `APIC`) from your tracks and
+  shows it in a dedicated window; set your own image for any track. Toggle with **ART**.
 - **🎛️ Authentic skin** — beveled buttons, green LCD time display, scrolling
   track marquee, volume & balance sliders, seek bar.
 - **📱 Installable & offline** — add to your home screen; the app shell is cached
@@ -85,7 +87,7 @@ and **Add to Home Screen** to install it as a standalone app.
 ## Android APK
 
 A prebuilt debug APK is committed at
-[`releases/winamp-mobile-v1.0.6.apk`](releases/winamp-mobile-v1.0.6.apk) — download
+[`releases/winamp-mobile-v1.0.7.apk`](releases/winamp-mobile-v1.0.7.apk) — download
 it, enable "Install unknown apps" on your phone, and open it.
 
 To build it yourself: the `android/` directory wraps the web app in a native
@@ -118,6 +120,8 @@ js/visualizer.js        Spectrum analyzer & oscilloscope canvas renderer
 js/equalizer.js         10-band EQ UI + presets
 js/playlist.js          Playlist model, shuffle/repeat, rendering
 js/demo.js              In-browser WAV demo-track synthesizer
+js/coverart.js          Embedded ID3v2 album-art extractor
+js/wsz.js / skin.js     Classic .wsz skin loader + sprite renderer
 sw.js                   Service worker (offline app shell)
 manifest.webmanifest    PWA manifest
 server.mjs              Zero-dependency static dev server

@@ -12,6 +12,7 @@ const ASSETS = [
   './js/demo.js',
   './js/wsz.js',
   './js/skin.js',
+  './js/coverart.js',
   './manifest.webmanifest',
   './icons/icon.svg',
 ];

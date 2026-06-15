@@ -9,6 +9,7 @@ import { Playlist, formatTime } from './playlist.js';
 import { generateDemoTracks } from './demo.js';
 import { readSkinArchive } from './wsz.js';
 import { ClassicSkin } from './skin.js';
+import { extractCoverArt } from './coverart.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -30,7 +31,44 @@ function loadAndPlay(track) {
   if (!track) return;
   player.load(track.url);
   setTrackTitle(track.title);
+  updateCoverArt(track);
   player.play();
+}
+
+/* ---------------- Cover art ---------------- */
+
+let currentArtUrl = null;
+async function updateCoverArt(track) {
+  const img = $('coverArt');
+  const ph = $('artPlaceholder');
+  // Resolve the art: manual override > cached > extracted from the file.
+  let url = track && track.coverUrl;
+  if (url === undefined && track && track.file) {
+    url = await extractCoverArt(track.file);
+    track.coverUrl = url;                 // cache (null too, so we don't re-parse)
+    if (track !== playlist.current) return;   // track changed while parsing
+  }
+  if (currentArtUrl && currentArtUrl !== url && currentArtUrl.startsWith('blob:')) {
+    // only revoke extracted blobs we own and aren't reusing
+  }
+  if (url) {
+    img.src = url;
+    img.hidden = false;
+    ph.hidden = true;
+    setMediaArtwork(url);
+  } else {
+    img.hidden = true;
+    ph.hidden = false;
+    img.removeAttribute('src');
+  }
+}
+
+function setMediaArtwork(url) {
+  if ('mediaSession' in navigator && navigator.mediaSession.metadata) {
+    try {
+      navigator.mediaSession.metadata.artwork = [{ src: url, sizes: '512x512' }];
+    } catch { /* ignore */ }
+  }
 }
 
 let currentTitleText = 'WINAMP MOBILE   ***   ';
@@ -106,8 +144,8 @@ player.addEventListener('timeupdate', () => {
   if (skinned) {
     $('skPosbar').value = pos;
     skin.renderTime($('skTime'), timeStr.replace('-', ''));
-    skin.renderText($('skKbps'), '320');
-    skin.renderText($('skKhz'), '44');
+    skin.renderTextStatic($('skKbps'), '320');
+    skin.renderTextStatic($('skKhz'), '44');
   }
 });
 
@@ -212,6 +250,24 @@ function togglePlWindow() {
 bind('eqToggle', toggleEqWindow); bind('skEqBtn', toggleEqWindow);
 bind('plToggle', togglePlWindow); bind('skPlBtn', togglePlWindow);
 
+function toggleArtWindow() {
+  const collapsed = $('artWindow').classList.toggle('collapsed');
+  $('artToggle').classList.toggle('active', !collapsed);
+}
+bind('artToggle', toggleArtWindow);
+
+// Manual cover art override (e.g. for files without embedded art).
+const coverInput = $('coverInput');
+$('artSetBtn').addEventListener('click', () => coverInput.click());
+coverInput.addEventListener('change', () => {
+  const f = coverInput.files[0];
+  if (f && playlist.current) {
+    playlist.current.coverUrl = URL.createObjectURL(f);
+    updateCoverArt(playlist.current);
+  }
+  coverInput.value = '';
+});
+
 /* ---------------- EQ on/off + presets ---------------- */
 
 const eqOnBtn = $('eqOnBtn');
@@ -229,7 +285,7 @@ playlist.addEventListener('play', (e) => loadAndPlay(e.detail));
 playlist.addEventListener('change', () => playlist.render());
 
 $('addBtn').addEventListener('click', openFiles);
-$('clearBtn').addEventListener('click', () => { player.stop(); playlist.clear(); updatePlayingState(); $('trackTitle').textContent = 'Winamp Mobile — load a track to begin ★'; });
+$('clearBtn').addEventListener('click', () => { player.stop(); playlist.clear(); updatePlayingState(); $('trackTitle').textContent = 'Winamp Mobile — load a track to begin ★'; updateCoverArt(null); });
 
 // Mirror the playlist into the skinned playlist window + its file buttons.
 playlist.addTarget($('skPlList'));
@@ -261,6 +317,7 @@ function addFiles(fileList) {
     url: URL.createObjectURL(f),
     isObjectURL: true,
     duration: 0,
+    file: f,                 // kept so we can read embedded cover art
   }));
   playlist.addMany(tracks);
   if (wasEmpty) playlist.setCurrent(0);
@@ -375,8 +432,8 @@ function enterSkinnedMode() {
 
   skVisualizer.setColors(skin.viscolor);
   skin.renderTime($('skTime'), formatTime(player.currentTime));
-  skin.renderText($('skKbps'), '320');
-  skin.renderText($('skKhz'), '44');
+  skin.renderTextStatic($('skKbps'), '320');
+  skin.renderTextStatic($('skKhz'), '44');
   scaleClassic();
   if (!player.paused) { visualizer.stop(); skVisualizer.start(); }
 }
