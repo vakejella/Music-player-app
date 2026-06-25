@@ -124,6 +124,17 @@ if (files.get('pledit.bmp')) {
   blit(pl, p, 0, 72, 125, 38, 0, 20 + bodyH);                 // bottom-left
   blit(pl, p, 126, 72, 150, 38, 125, 20 + bodyH);             // bottom-right
   writeFileSync((process.argv[3]||'.')+'/preview_pl.png', png(scale(pl, 3)));
+
+  // Cover-art window frame (same pledit sprites, no bottom corners)
+  const AW = 275, abodyH = 150, AH = 20 + abodyH + 3, aw = canvas(AW, AH);
+  rect(aw, 12, 20, 243, abodyH, 0, 0, 0);
+  blit(aw, p, 0, 0, 25, 20, 0, 0);
+  tileX(aw, p, 127, 0, 25, 20, 25, 0, AW - 50);
+  blit(aw, p, 153, 0, 25, 20, AW - 25, 0);
+  tileY(aw, p, 0, 42, 12, 29, 0, 20, abodyH);
+  tileY(aw, p, 31, 42, 20, 29, AW - 20, 20, abodyH);
+  tileX(aw, p, 127, 0, 25, 20, 0, 20 + abodyH, AW);
+  writeFileSync((process.argv[3]||'.')+'/preview_art.png', png(scale(aw, 3)));
 }
 
-console.log('wrote preview_main.png, preview_eq.png, preview_pl.png');
+console.log('wrote preview_main.png, preview_eq.png, preview_pl.png, preview_art.png');

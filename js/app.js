@@ -51,10 +51,13 @@ async function updateCoverArt(track) {
   if (currentArtUrl && currentArtUrl !== url && currentArtUrl.startsWith('blob:')) {
     // only revoke extracted blobs we own and aren't reusing
   }
+  const skImg = $('skCoverArt');
+  const skPh = $('skArtPlaceholder');
   if (url) {
     img.src = url;
     img.hidden = false;
     ph.hidden = true;
+    if (skImg) { skImg.src = url; skImg.hidden = false; skPh.hidden = true; }
     setMediaArtwork(url);
     // Hand the art to the native media notification (needs a data URL).
     if (window.AndroidMedia && track) {
@@ -65,6 +68,7 @@ async function updateCoverArt(track) {
     img.hidden = true;
     ph.hidden = false;
     img.removeAttribute('src');
+    if (skImg) { skImg.hidden = true; skImg.removeAttribute('src'); skPh.hidden = false; }
     if (track) pushNativeMetadata(track);
   }
 }
@@ -257,6 +261,11 @@ bind('eqToggle', toggleEqWindow); bind('skEqBtn', toggleEqWindow);
 bind('plToggle', togglePlWindow); bind('skPlBtn', togglePlWindow);
 
 function toggleArtWindow() {
+  if (skinned && skin.hasPl()) {
+    const hidden = $('skArtWrap').hidden = !$('skArtWrap').hidden;
+    $('artToggle').classList.toggle('active', !hidden);
+    return;
+  }
   const collapsed = $('artWindow').classList.toggle('collapsed');
   $('artToggle').classList.toggle('active', !collapsed);
 }
@@ -436,6 +445,9 @@ function enterSkinnedMode() {
   if (skin.hasPl()) { $('skPlWrap').hidden = false; }
   skin.setToggle('#skPlBtn', skin.hasPl() && !$('skPlWrap').hidden);
 
+  // Skinned cover-art window (uses the pledit.bmp frame).
+  if (skin.hasPl()) { $('skArtWrap').hidden = false; }
+
   skVisualizer.setColors(skin.viscolor);
   skin.renderTime($('skTime'), formatTime(player.currentTime));
   skin.renderTextStatic($('skKbps'), '320');
@@ -450,6 +462,7 @@ function removeSkin() {
   $('skWrap').hidden = true;
   $('skEqWrap').hidden = true;
   $('skPlWrap').hidden = true;
+  $('skArtWrap').hidden = true;
   $('removeSkinBtn').hidden = true;
   $('loadSkinBtn').textContent = '🎨 LOAD .WSZ SKIN';
   skVisualizer.stop();
@@ -465,6 +478,7 @@ function scaleClassic() {
   $('skWrap').style.height = h;
   $('skEqWrap').style.height = h;
   $('skPlWrap').style.height = `${Math.ceil(150 * scale)}px`;
+  $('skArtWrap').style.height = `${Math.ceil(173 * scale)}px`;
 }
 window.addEventListener('resize', () => { if (skinned) scaleClassic(); });
 

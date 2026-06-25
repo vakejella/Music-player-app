@@ -15,8 +15,10 @@ installable **Progressive Web App**. It really whips the llama's ass.
   9 presets (Rock, Pop, Jazz, Dance, Bass Boost, and more).
 - **📃 Playlist editor** — add files, reorder-free tap-to-play, per-track remove,
   shuffle and repeat (none / all / one).
-- **🖼️ Cover art** — reads embedded album art (ID3v2 `APIC`) from your tracks and
-  shows it in a dedicated window; set your own image for any track. Toggle with **ART**.
+- **🖼️ Cover art** — reads embedded album art straight from the file — MP3
+  (ID3v2 `APIC`), M4A/MP4/AAC (`covr` atom) and FLAC (`PICTURE`) — and shows it
+  in a dedicated window (skinned to match a loaded `.wsz`). Set your own image
+  for any track. Toggle with **ART**.
 - **🎛️ Authentic skin** — beveled buttons, green LCD time display, scrolling
   track marquee, volume & balance sliders, seek bar.
 - **📱 Installable & offline** — add to your home screen; the app shell is cached
@@ -60,9 +62,9 @@ dependencies) and maps each sprite to the classic 275×116 main-window layout
 Where to get skins: the [Winamp Skin Museum](https://skins.webamp.org) has
 thousands of free `.wsz` files — download one and load it.
 
-> **Coverage:** the **main**, **equalizer**, and **playlist** windows are all
-> rendered from the skin's sprites. Tap **↩ MODERN UI** to return to the
-> default look.
+> **Coverage:** the **main**, **equalizer**, **playlist**, and **cover-art**
+> windows are all rendered from the skin's sprites. Tap **↩ MODERN UI** to
+> return to the default look.
 
 ### Verifying skins offline
 
@@ -89,7 +91,7 @@ and **Add to Home Screen** to install it as a standalone app.
 ## Android APK
 
 A prebuilt debug APK is committed at
-[`releases/winamp-mobile-v1.0.8.apk`](releases/winamp-mobile-v1.0.8.apk) — download
+[`releases/winamp-mobile-v1.0.9.apk`](releases/winamp-mobile-v1.0.9.apk) — download
 it, enable "Install unknown apps" on your phone, and open it.
 
 To build it yourself: the `android/` directory wraps the web app in a native

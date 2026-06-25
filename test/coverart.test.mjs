@@ -32,4 +32,21 @@ assert.ok(url && url.startsWith('blob:'), 'should return a blob URL for embedded
 const noTag = await extractCoverArt(new Blob([Buffer.from('no id3 here')]));
 assert.equal(noTag, null, 'files without an ID3 tag return null');
 
-console.log('coverart.test.mjs — extraction + no-tag fallback pass ✓');
+// --- FLAC PICTURE block ---
+const be32 = (n) => Buffer.from([(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255]);
+const png = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+const mime = Buffer.from('image/png');
+const picBody = Buffer.concat([be32(3), be32(mime.length), mime, be32(0), be32(16), be32(16), be32(8), be32(0), be32(png.length), png]);
+const flac = Buffer.concat([Buffer.from('fLaC'), Buffer.from([0x80 | 6, (picBody.length >> 16) & 255, (picBody.length >> 8) & 255, picBody.length & 255]), picBody]);
+assert.ok((await extractCoverArt(new Blob([flac])))?.startsWith('blob:'), 'FLAC PICTURE extracted');
+
+// --- MP4 covr atom ---
+const atom = (type, body) => Buffer.concat([be32(body.length + 8), Buffer.from(type), body]);
+const mp4 = Buffer.concat([
+  atom('ftyp', Buffer.from('M4A isom')),
+  atom('moov', atom('udta', atom('meta', Buffer.concat([be32(0),
+    atom('ilst', atom('covr', atom('data', Buffer.concat([be32(14), be32(0), png]))))])))),
+]);
+assert.ok((await extractCoverArt(new Blob([mp4])))?.startsWith('blob:'), 'MP4 covr extracted');
+
+console.log('coverart.test.mjs — MP3/FLAC/MP4 extraction + no-tag fallback pass ✓');

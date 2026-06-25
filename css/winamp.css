@@ -636,12 +636,51 @@ input[type="range"].sk-eqs::-moz-range-thumb {
 /* When a skin is active: hide the modern main / EQ / playlist windows */
 html.skinned .main-window,
 html.skinned .eq-window,
-html.skinned .pl-window { display: none; }
+html.skinned .pl-window,
+html.skinned .art-window { display: none; }
 html.skinned .pl-item { color: var(--pl-text, #00cf90); }
 html.skinned .pl-item.current {
   color: var(--pl-current, #fff);
   background: var(--pl-selbg, rgba(0,207,144,0.12));
   text-shadow: none;
+}
+
+/* Skinned cover-art window — pledit-style frame, 275 wide to match the rest */
+.sk-artwin {
+  position: relative;
+  width: 275px;
+  height: 173px;
+  background: var(--pl-bg, #000) no-repeat;
+  transform: scale(var(--sk-scale, 1.5));
+  transform-origin: top center;
+  image-rendering: pixelated;
+  overflow: hidden;
+}
+.sk-artwin > * { position: absolute; image-rendering: pixelated; background-repeat: no-repeat; }
+
+.skart-tl    { left: 0;     top: 0;   width: 25px;  height: 20px; }
+.skart-tf-l  { left: 25px;  top: 0;   width: 53px;  height: 20px; }
+.skart-tf-r  { left: 198px; top: 0;   width: 52px;  height: 20px; }
+.skart-tr    { left: 250px; top: 0;   width: 25px;  height: 20px; }
+.skart-title {
+  left: 78px; top: 0; width: 120px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-pixel); font-size: 8px; font-weight: bold;
+  letter-spacing: 2px; color: #1f2d52; background: transparent;
+}
+.skart-left   { left: 0;     top: 20px;  width: 12px;  height: 150px; }
+.skart-right  { left: 255px; top: 20px;  width: 20px;  height: 150px; }
+.skart-bottom { left: 0;     top: 170px; width: 275px; height: 3px; }
+.skart-body {
+  left: 12px; top: 20px; width: 243px; height: 150px;
+  background: var(--pl-bg, #000);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.skart-img { max-width: 96%; max-height: 96%; image-rendering: auto; }
+.skart-placeholder {
+  font-family: var(--font-pixel); font-size: 9px; letter-spacing: 1px;
+  color: var(--pl-text, #00cf90); opacity: 0.7;
 }
 
 /* Skin loader bar */

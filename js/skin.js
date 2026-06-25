@@ -104,6 +104,7 @@ export class ClassicSkin {
     this._paintMain();
     this._paintEq();
     this._paintPlaylist();
+    this._paintArt();
     this._paintTargets();
     document.documentElement.classList.add('skinned');
     return this;
@@ -151,6 +152,30 @@ export class ClassicSkin {
   }
 
   hasPl() { return this.images.has('pledit.bmp'); }
+
+  _paintArt() {
+    const img = this.images.get('pledit.bmp');
+    if (!img) return;
+    const sheet = `url("${img.src}")`;
+    const place = (id, x, y) => {
+      const el = document.getElementById(id);
+      if (el) { el.style.backgroundImage = sheet; el.style.backgroundPosition = `-${x}px -${y}px`; }
+    };
+    place('skArtTL', 0, 0);
+    place('skArtTR', 153, 0);
+    const top = this._extractSprite('pledit.bmp', 127, 0, 25, 20);
+    document.querySelectorAll('.skart-tfill').forEach((e) => {
+      e.style.backgroundImage = `url("${top}")`; e.style.backgroundRepeat = 'repeat-x';
+    });
+    const bottom = document.getElementById('skArtBottom');
+    if (bottom) { bottom.style.backgroundImage = `url("${top}")`; bottom.style.backgroundRepeat = 'repeat-x'; }
+    const left = this._extractSprite('pledit.bmp', 0, 42, 12, 29);
+    const lEl = document.getElementById('skArtLeft');
+    if (lEl) { lEl.style.backgroundImage = `url("${left}")`; lEl.style.backgroundRepeat = 'repeat-y'; }
+    const right = this._extractSprite('pledit.bmp', 31, 42, 20, 29);
+    const rEl = document.getElementById('skArtRight');
+    if (rEl) { rEl.style.backgroundImage = `url("${right}")`; rEl.style.backgroundRepeat = 'repeat-y'; }
+  }
 
   _paintMain() {
     const main = document.getElementById('skMain');
