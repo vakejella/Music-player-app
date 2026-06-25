@@ -21,7 +21,9 @@ installable **Progressive Web App**. It really whips the llama's ass.
   track marquee, volume & balance sliders, seek bar.
 - **📱 Installable & offline** — add to your home screen; the app shell is cached
   by a service worker and runs without a network connection.
-- **🔒 Lock-screen controls** — Media Session integration for play/pause/next/prev.
+- **🔔 Media notification** — in the APK, a native foreground `MediaSession`
+  service shows the player on the lock screen / notification shade with album
+  art and play / pause / next / previous controls, like any music app.
 - **⌨️ Keyboard shortcuts** (desktop): `Space`/`x` play-pause, `b`/→ next,
   `z`/← previous, `v` stop.
 
@@ -87,7 +89,7 @@ and **Add to Home Screen** to install it as a standalone app.
 ## Android APK
 
 A prebuilt debug APK is committed at
-[`releases/winamp-mobile-v1.0.7.apk`](releases/winamp-mobile-v1.0.7.apk) — download
+[`releases/winamp-mobile-v1.0.8.apk`](releases/winamp-mobile-v1.0.8.apk) — download
 it, enable "Install unknown apps" on your phone, and open it.
 
 To build it yourself: the `android/` directory wraps the web app in a native

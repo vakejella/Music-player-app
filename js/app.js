@@ -56,10 +56,16 @@ async function updateCoverArt(track) {
     img.hidden = false;
     ph.hidden = true;
     setMediaArtwork(url);
+    // Hand the art to the native media notification (needs a data URL).
+    if (window.AndroidMedia && track) {
+      if (track.coverDataUrl) pushNativeMetadata(track);
+      else blobUrlToDataUrl(url).then((d) => { track.coverDataUrl = d; pushNativeMetadata(track); }).catch(() => {});
+    }
   } else {
     img.hidden = true;
     ph.hidden = false;
     img.removeAttribute('src');
+    if (track) pushNativeMetadata(track);
   }
 }
 
@@ -103,7 +109,7 @@ function doPlay() {
   playCurrentOrFirst();
 }
 const doPause = () => player.toggle();
-const doStop  = () => { player.stop(); updatePlayingState(); };
+const doStop  = () => { player.stop(); updatePlayingState(); if (window.AndroidMedia) { try { window.AndroidMedia.stop(); } catch { /* ignore */ } } };
 const doNext  = () => { const t = playlist.next(); if (t) loadAndPlay(t); };
 const doPrev  = () => { const t = playlist.prev(); if (t) loadAndPlay(t); };
 
@@ -484,6 +490,53 @@ if ('mediaSession' in navigator) {
       });
     }
   });
+}
+
+/* ---------------- Native Android media notification bridge ----------------
+   The APK wraps this page in a WebView, which (unlike Chrome) does not surface
+   a media notification automatically. A native foreground service exposes an
+   `AndroidMedia` bridge; we push title/art/playback state to it and accept
+   transport commands back via window.__winampMedia. No-op in a browser. */
+
+const NativeMedia = window.AndroidMedia || null;
+
+window.__winampMedia = (command) => {
+  switch (command) {
+    case 'play':  player.play(); break;
+    case 'pause': player.pause(); break;
+    case 'next':  doNext(); break;
+    case 'prev':  doPrev(); break;
+    case 'stop':  doStop(); break;
+  }
+};
+
+async function blobUrlToDataUrl(url) {
+  const blob = await (await fetch(url)).blob();
+  return await new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(blob);
+  });
+}
+
+function pushNativeMetadata(track) {
+  if (!NativeMedia || !track) return;
+  try {
+    NativeMedia.setMetadata(track.title || 'Winamp Mobile', 'Winamp Mobile',
+      track.coverDataUrl || '', player.duration || 0);
+  } catch { /* ignore */ }
+}
+
+function pushNativePlayback() {
+  if (!NativeMedia) return;
+  try { NativeMedia.setPlayback(!player.paused, player.currentTime || 0); } catch { /* ignore */ }
+}
+
+if (NativeMedia) {
+  player.addEventListener('play', pushNativePlayback);
+  player.addEventListener('pause', pushNativePlayback);
+  player.addEventListener('loadedmetadata', () => pushNativeMetadata(playlist.current));
 }
 
 /* ---------------- Keyboard shortcuts (desktop testing) ---------------- */
