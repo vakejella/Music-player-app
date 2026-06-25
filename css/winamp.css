@@ -565,6 +565,8 @@ input[type="range"].sk-balance::-moz-range-thumb { width: 14px; height: 11px; bo
 .sk-eq-auto   { left: 39px;  top: 18px; width: 33px; height: 12px; }
 .sk-eq-preset { left: 217px; top: 18px; width: 44px; height: 12px; }
 
+.sk-eqchan { top: 38px; width: 14px; height: 58px; background-repeat: repeat-y; }
+
 input[type="range"].sk-eqs {
   -webkit-appearance: none; appearance: none;
   writing-mode: vertical-lr; direction: rtl;
@@ -577,16 +579,17 @@ input[type="range"].sk-eqs::-webkit-slider-runnable-track {
   -webkit-appearance: none; width: 3px; background: transparent; border: none;
 }
 input[type="range"].sk-eqs::-moz-range-track { width: 3px; background: transparent; border: none; }
+/* Thumb: the skin's own EQ handle (--eq-thumb) with a grey-handle fallback. */
 input[type="range"].sk-eqs::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 13px; height: 7px;
-  background: linear-gradient(180deg, #ededed 0%, #cfcfcf 42%, #3a3a3a 42%, #3a3a3a 58%, #c0c0c0 58%, #8c8c8c 100%);
-  border: 1px solid #222; border-radius: 1px;
+  width: 11px; height: 11px;
+  background: var(--eq-thumb, linear-gradient(180deg, #ededed 0%, #cfcfcf 42%, #3a3a3a 42%, #3a3a3a 58%, #c0c0c0 58%, #8c8c8c 100%)) center / 11px 11px no-repeat;
+  border: 0; border-radius: 0;
 }
 input[type="range"].sk-eqs::-moz-range-thumb {
-  width: 13px; height: 7px;
-  background: linear-gradient(180deg, #ededed 0%, #cfcfcf 42%, #3a3a3a 42%, #3a3a3a 58%, #c0c0c0 58%, #8c8c8c 100%);
-  border: 1px solid #222; border-radius: 1px;
+  width: 11px; height: 11px;
+  background: var(--eq-thumb, linear-gradient(180deg, #ededed 0%, #cfcfcf 42%, #3a3a3a 42%, #3a3a3a 58%, #c0c0c0 58%, #8c8c8c 100%)) center / 11px 11px no-repeat;
+  border: 0; border-radius: 0;
 }
 
 /* Skinned playlist window — tiled from pledit.bmp (275 wide) */

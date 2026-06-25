@@ -175,6 +175,14 @@ export class ClassicSkin {
     const right = this._extractSprite('pledit.bmp', 31, 42, 20, 29);
     const rEl = document.getElementById('skArtRight');
     if (rEl) { rEl.style.backgroundImage = `url("${right}")`; rEl.style.backgroundRepeat = 'repeat-y'; }
+
+    // Title color adapts to the titlebar brightness so it's readable on any skin.
+    const titleEl = document.querySelector('.skart-title');
+    if (titleEl) {
+      const dark = this._spriteLuma('pledit.bmp', 127, 0, 25, 20) < 130;
+      titleEl.style.color = dark ? '#eef2fb' : '#172540';
+      titleEl.style.textShadow = dark ? '0 1px 1px rgba(0,0,0,0.7)' : '0 1px 0 rgba(255,255,255,0.45)';
+    }
   }
 
   _paintMain() {
@@ -192,6 +200,32 @@ export class ClassicSkin {
       tb.style.backgroundImage = `url("${img.src}")`;
       tb.style.backgroundPosition = '0 -134px';   // EQ title bar sprite
     }
+    // Use the skin's own EQ slider thumb (the little handle/knob at 0,164).
+    if (img) {
+      const thumb = this._extractSprite('eqmain.bmp', 0, 164, 11, 11);
+      document.documentElement.style.setProperty('--eq-thumb', `url("${thumb}")`);
+      // Cover each band channel with a clean slice of its own channel so any
+      // knobs the skin baked into the EQ background don't double up.
+      document.querySelectorAll('.sk-eqchan').forEach((el) => {
+        const x = parseInt(el.dataset.x, 10);
+        el.style.backgroundImage = `url("${this._extractSprite('eqmain.bmp', x, 38, 14, 4)}")`;
+        el.style.backgroundRepeat = 'repeat-y';
+      });
+    }
+  }
+
+  /** Average luminance of a sprite region (0..255) — for adaptive contrast. */
+  _spriteLuma(name, x, y, w, h) {
+    const img = this.images.get(name);
+    if (!img) return 128;
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
+    const d = ctx.getImageData(0, 0, w, h).data;
+    let sum = 0;
+    for (let i = 0; i < d.length; i += 4) sum += (d[i] + d[i + 1] + d[i + 2]) / 3;
+    return sum / (d.length / 4);
   }
 
   hasEq() { return this.images.has('eqmain.bmp'); }

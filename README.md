@@ -91,7 +91,7 @@ and **Add to Home Screen** to install it as a standalone app.
 ## Android APK
 
 A prebuilt debug APK is committed at
-[`releases/winamp-mobile-v1.0.9.apk`](releases/winamp-mobile-v1.0.9.apk) — download
+[`releases/winamp-mobile-v1.0.10.apk`](releases/winamp-mobile-v1.0.10.apk) — download
 it, enable "Install unknown apps" on your phone, and open it.
 
 To build it yourself: the `android/` directory wraps the web app in a native

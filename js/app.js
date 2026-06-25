@@ -360,6 +360,14 @@ window.addEventListener('drop', (e) => {
 // 11 vertical sliders (preamp + 10 bands) overlaid on the eqmain background.
 const SK_EQ_X = [21, 78, 96, 114, 132, 150, 168, 186, 204, 222, 240];
 const skEqSliders = SK_EQ_X.map((x, idx) => {
+  // A per-band "channel cover" sits behind each slider; skin.js paints it with
+  // a clean slice of the skin's own channel so any baked-in knobs are hidden.
+  const chan = document.createElement('div');
+  chan.className = 'sk-eqchan';
+  chan.style.left = `${x}px`;
+  chan.dataset.x = String(x);
+  $('skEqWin').appendChild(chan);
+
   const inp = document.createElement('input');
   inp.type = 'range';
   inp.className = 'sk-eqs';
