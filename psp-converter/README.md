@@ -23,6 +23,23 @@ Modern MP4s (High profile, 1080p, 60 fps, 5.1 audio…) show up as
 Works on any PSP with firmware **3.30+** (every PSP-1000/2000/3000/Go
 updates to 6.61).
 
+## Mobile edition (runs in the browser, no install)
+
+For phones — or any machine where installing FFmpeg isn't an option —
+`build-mobile.mjs` produces **one self-contained HTML file (~12 MB)** with
+FFmpeg compiled to WebAssembly embedded inside. Open it in Chrome, pick a
+video, and the conversion happens entirely on-device: no server, no
+uploads, works offline.
+
+```bash
+node psp-converter/build-mobile.mjs
+# → psp-converter/dist/psp-video-converter-mobile.html  (send this to the phone)
+```
+
+Caveats: in-browser conversion holds the file in memory (practical limit
+≈1 GB) and runs at roughly the video's own length on a phone, so use the
+native tools below when a computer is available.
+
 ## Single-file edition
 
 Everything below is also bundled into one standalone file,

@@ -1,0 +1,580 @@
+<!doctype html>
+<!--
+  PSP Video Converter — mobile single-file edition.
+
+  This file is a BUILD TEMPLATE: build-mobile.mjs replaces the two
+  placeholders below with a base64-encoded ffmpeg.wasm engine
+  (@ffmpeg/core-st) to produce one self-contained ~33 MB HTML file that
+  converts videos to PSP format entirely inside the browser — no server,
+  no uploads, works offline once saved to the phone.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PSP Video Converter</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='10' y='3' rx='2' fill='%23111'/%3E%3Crect x='4' y='5' width='8' height='6' rx='1' fill='%234aa8ff'/%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--accent:#4aa8ff;--accent-dim:#2b6cb0;--text:#eef3fa;--text-dim:#9fb2c8;
+--panel:rgba(255,255,255,.06);--panel-border:rgba(255,255,255,.14)}
+html,body{min-height:100%}
+body{font-family:"Segoe UI",-apple-system,"Helvetica Neue",Arial,sans-serif;color:var(--text);
+background:linear-gradient(160deg,#06122b 0%,#0b2a5e 45%,#123a7a 70%,#0a1f47 100%);
+background-attachment:fixed;display:flex;justify-content:center;padding:1.5rem 1rem 4rem;
+position:relative;overflow-x:hidden}
+.wave{position:fixed;inset:auto 0 0 0;height:34vh;pointer-events:none;opacity:.5;z-index:0}
+.wave svg{width:100%;height:100%}
+.wave path{fill:rgba(120,180,255,.12);stroke:rgba(140,195,255,.55);stroke-width:2;
+filter:drop-shadow(0 0 12px rgba(90,160,255,.7));animation:drift 14s ease-in-out infinite alternate}
+@keyframes drift{from{transform:translateX(-3%) scaleY(1)}to{transform:translateX(3%) scaleY(1.12)}}
+main{width:100%;max-width:560px;position:relative;z-index:1}
+header{text-align:center;margin-bottom:1.3rem}
+h1{font-weight:300;font-size:1.7rem;letter-spacing:.04em}
+.psp-logo{font-weight:800;font-style:italic;letter-spacing:.12em;
+background:linear-gradient(180deg,#fff,#8fbfff);-webkit-background-clip:text;
+background-clip:text;color:transparent;margin-right:.3rem}
+.tagline{color:var(--text-dim);margin-top:.35rem;font-size:.9rem}
+.engine{display:inline-block;margin-top:.6rem;font-size:.75rem;padding:.25rem .7rem;
+border-radius:99px;border:1px solid var(--panel-border);color:var(--text-dim)}
+.engine.ready{color:#9ff0b5;border-color:rgba(120,240,160,.4)}
+.engine.failed{color:#ff9a9a;border-color:rgba(255,120,120,.4)}
+.dropzone{border:2px dashed var(--panel-border);border-radius:14px;background:var(--panel);
+padding:1.8rem 1rem;text-align:center;cursor:pointer;
+transition:border-color .15s,background .15s}
+.dropzone:active{border-color:var(--accent)}
+.dropzone.has-file{border-style:solid;border-color:var(--accent-dim)}
+.dz-icon{font-size:1.6rem;width:3rem;height:3rem;line-height:3rem;margin:0 auto .7rem;
+border-radius:50%;background:rgba(74,168,255,.18);color:var(--accent)}
+.dz-hint{color:var(--text-dim);font-size:.82rem;margin-top:.45rem}
+.dz-filename{font-weight:600;word-break:break-all}
+.dz-filesize{color:var(--text-dim);font-size:.82rem;margin-top:.3rem}
+.options{margin:1.2rem 0 .4rem}
+.options label{display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;
+color:var(--text-dim);margin-bottom:.4rem}
+select{width:100%;padding:.8rem .9rem;border-radius:10px;border:1px solid var(--panel-border);
+background:#0d234d;color:var(--text);font-size:1rem;appearance:none}
+.preset-desc{color:var(--text-dim);font-size:.82rem;margin-top:.4rem;min-height:1.2em}
+.convert-btn{width:100%;margin-top:1.1rem;padding:1rem;font-size:1.05rem;font-weight:600;
+letter-spacing:.03em;color:#04162e;background:linear-gradient(180deg,#7cc0ff,var(--accent));
+border:none;border-radius:10px;cursor:pointer}
+.convert-btn:disabled{opacity:.35}
+.status{margin-top:1.4rem}
+.progress-track{height:14px;border-radius:7px;background:rgba(255,255,255,.1);overflow:hidden}
+.progress-bar{height:100%;width:0%;border-radius:7px;
+background:linear-gradient(90deg,var(--accent-dim),var(--accent));
+box-shadow:0 0 10px rgba(74,168,255,.8);transition:width .3s ease}
+#status-text{margin-top:.55rem;color:var(--text-dim);text-align:center;font-size:.88rem}
+.result,.error{margin-top:1.5rem;background:var(--panel);border:1px solid var(--panel-border);
+border-radius:14px;padding:1.2rem}
+.result h2{font-weight:400;font-size:1.15rem;color:#9ff0b5}
+.error h2{font-weight:400;font-size:1.15rem;color:#ff9a9a}
+.downloads{display:flex;flex-direction:column;gap:.55rem;margin:1rem 0 1.1rem}
+.dl{display:block;text-align:center;padding:.8rem 1rem;border-radius:10px;
+border:1px solid var(--panel-border);background:rgba(255,255,255,.08);color:var(--text);
+text-decoration:none;font-size:.95rem;cursor:pointer}
+.dl.primary{background:linear-gradient(180deg,#7cc0ff,var(--accent));color:#04162e;
+font-weight:600;border:none}
+.howto{margin-left:1.15rem;color:var(--text-dim);font-size:.88rem}
+.howto li{margin-bottom:.45rem}
+.howto code,.howto strong{color:var(--text)}
+.error pre{white-space:pre-wrap;word-break:break-word;font-size:.78rem;color:#ffc9c9;
+background:rgba(0,0,0,.3);border-radius:8px;padding:.8rem;margin:.8rem 0 1rem;
+max-height:11rem;overflow-y:auto}
+footer{margin-top:2rem;text-align:center}
+footer p{color:var(--text-dim);font-size:.78rem;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wave" aria-hidden="true">
+<svg viewBox="0 0 1440 320" preserveAspectRatio="none">
+<path d="M0,192 C240,96 480,288 720,192 C960,96 1200,256 1440,160 L1440,320 L0,320 Z"/>
+</svg>
+</div>
+<main>
+<header>
+<h1><span class="psp-logo">PSP</span> Video Converter</h1>
+<p class="tagline">Converts right here on your phone — no uploads, works offline.</p>
+<span id="engine" class="engine">Loading engine…</span>
+</header>
+<section id="drop" class="dropzone" role="button" tabindex="0" aria-label="Choose a video to convert">
+<div class="dz-inner">
+<div class="dz-icon">⬆</div>
+<p><strong>Tap to choose a video</strong></p>
+<p class="dz-hint">MP4, MOV, MKV, WebM, AVI… best under ~1&nbsp;GB</p>
+</div>
+<input type="file" id="file" accept="video/*,.mkv,.avi,.mov,.webm,.mp4" hidden>
+</section>
+<section class="options">
+<label for="preset">Quality preset</label>
+<select id="preset">
+<option value="native" selected>PSP Native (480×272) — 768 kbps</option>
+<option value="hq">High Quality (480×272) — 1500 kbps</option>
+<option value="small">Small Size (368×208) — 384 kbps</option>
+<option value="tv">TV Out (720×480) — 2500 kbps</option>
+</select>
+<p id="preset-desc" class="preset-desc"></p>
+</section>
+<button id="convert" class="convert-btn" disabled>Convert for PSP</button>
+<section id="status" class="status" hidden>
+<div class="progress-track"><div id="bar" class="progress-bar"></div></div>
+<p id="status-text">Working…</p>
+</section>
+<section id="result" class="result" hidden>
+<h2>✔ Ready for your PSP</h2>
+<div class="downloads">
+<a id="dl-zip" class="dl primary" download>Download PSP package (.zip)</a>
+<a id="dl-mp4" class="dl" download>Video only (.MP4)</a>
+<a id="dl-thm" class="dl" download>Thumbnail (.THM)</a>
+</div>
+<ol class="howto">
+<li>Unzip the package onto the <strong>root</strong> of the PSP's Memory&nbsp;Stick — it creates the <code>VIDEO</code> folder with both files inside.</li>
+<li>To reach the Memory Stick from a phone use a USB-OTG adapter + the PSP in <em>Settings → USB Connection</em>, or a card reader.</li>
+<li>On the PSP: <strong>Video → Memory Stick</strong>, press ✕ to play.</li>
+</ol>
+</section>
+<section id="error" class="error" hidden>
+<h2>✖ Conversion failed</h2>
+<pre id="error-text"></pre>
+<button id="retry" class="dl">Start over</button>
+</section>
+<footer>
+<p>Powered by FFmpeg compiled to WebAssembly, running entirely in this page.
+Output: H.264 Baseline + AAC-LC — plays on any PSP with firmware 3.30+.
+Phone conversions are not fast: expect roughly the video's own length, so
+plug in for long movies. Keep this tab in the foreground while converting.</p>
+</footer>
+</main>
+
+<!-- ffmpeg.wasm engine, embedded gzipped+base64 at build time -->
+<script type="text/plain" id="core-js-b64">__CORE_JS_GZ_B64__</script>
+<script type="text/plain" id="wasm-b64">__WASM_GZ_B64__</script>
+
+<!-- Worker source: runs the wasm engine off the UI thread -->
+<script type="text/plain" id="worker-src">
+'use strict';
+var core = null, ffmain = null, printHandler = null;
+
+function handlePrint(m) { if (printHandler) printHandler(String(m)); }
+
+function parseArgsToC(args) {
+  var argsPtr = core._malloc(args.length * 4);
+  for (var i = 0; i < args.length; i++) {
+    var sz = core.lengthBytesUTF8(args[i]) + 1;
+    var buf = core._malloc(sz);
+    core.stringToUTF8(args[i], buf, sz);
+    core.setValue(argsPtr + 4 * i, buf, 'i32');
+  }
+  return [args.length, argsPtr];
+}
+
+// Run one ffmpeg command. Completion is signalled either by the core
+// printing FFMPEG_END (error paths) or by ffmpeg calling exit(), which
+// Emscripten surfaces as a thrown ExitStatus (success paths). The
+// runtime stays usable for further runs after both.
+function runFF(args, onLine) {
+  return new Promise(function (resolve, reject) {
+    var lines = [];
+    var settled = false;
+    function finish() {
+      if (!settled) { settled = true; printHandler = null; resolve(lines); }
+    }
+    printHandler = function (m) {
+      if (m === 'FFMPEG_END') return finish();
+      lines.push(m);
+      if (lines.length > 300) lines.shift();
+      if (onLine) onLine(m);
+    };
+    try {
+      var ca = parseArgsToC(['./ffmpeg', '-nostdin', '-y'].concat(args));
+      ffmain(ca[0], ca[1]);
+      finish();
+    } catch (e) {
+      if (e && (typeof e.status === 'number' || /terminated with exit/.test(String(e && e.message)))) {
+        finish();
+      } else if (!settled) { settled = true; printHandler = null; reject(e); }
+    }
+  });
+}
+
+function ts2sec(ts) {
+  var p = ts.split(':');
+  return parseFloat(p[0]) * 3600 + parseFloat(p[1]) * 60 + parseFloat(p[2]);
+}
+
+var PRESETS = {
+  native: { w: 480, h: 272, vb: 768,  ab: 128 },
+  hq:     { w: 480, h: 272, vb: 1500, ab: 160 },
+  small:  { w: 368, h: 208, vb: 384,  ab: 96  },
+  tv:     { w: 720, h: 480, vb: 2500, ab: 160 }
+};
+
+function vfilter(w, h) {
+  return 'scale=' + w + ':' + h + ':force_original_aspect_ratio=decrease:' +
+         'force_divisible_by=2,pad=' + w + ':' + h + ':-1:-1:color=black';
+}
+
+function tryUnlink(name) { try { core.FS.unlink(name); } catch (e) {} }
+
+self.onmessage = function (ev) {
+  var msg = ev.data;
+  if (msg.type === 'init') {
+    createFFmpegCore({
+      wasmBinary: new Uint8Array(msg.wasm),
+      print: handlePrint,
+      printErr: handlePrint
+    }).then(function (c) {
+      core = c;
+      ffmain = core.cwrap('main', 'number', ['number', 'number']);
+      self.postMessage({ type: 'ready' });
+    }).catch(function (e) {
+      self.postMessage({ type: 'fatal', error: 'Engine failed to start: ' + e.message });
+    });
+    return;
+  }
+  if (msg.type === 'convert') doConvert(msg);
+};
+
+async function doConvert(msg) {
+  var inName = 'input.dat';
+  var outName = 'out.mp4';
+  var thmName = 'thumb.thm';
+  try {
+    var p = PRESETS[msg.preset] || PRESETS.native;
+    self.postMessage({ type: 'stage', stage: 'reading' });
+    var data = new Uint8Array(await msg.file.arrayBuffer());
+    core.FS.writeFile(inName, data);
+    data = null;
+
+    // Probe: a plain "-i" run dumps Duration and stream info to stderr.
+    self.postMessage({ type: 'stage', stage: 'probing' });
+    var duration = 0, fps = 0, sawVideo = false;
+    var probeLines = await runFF(['-i', inName], function (line) {
+      var m;
+      if ((m = /Duration:\s*(\d+:\d+:\d+\.\d+)/.exec(line))) duration = ts2sec(m[1]);
+      if (/Stream .*: Video/.test(line)) {
+        sawVideo = true;
+        if ((m = /([\d.]+) fps/.exec(line))) fps = parseFloat(m[1]);
+      }
+    });
+    if (!sawVideo) {
+      throw new Error('No video stream found in this file.\n\n' +
+        probeLines.slice(-8).join('\n'));
+    }
+
+    self.postMessage({ type: 'stage', stage: 'converting', duration: duration });
+    var args = [
+      '-i', inName,
+      '-c:v', 'libx264', '-preset', 'superfast',
+      '-profile:v', 'baseline', '-level', '3.0',
+      '-pix_fmt', 'yuv420p',
+      '-vf', vfilter(p.w, p.h),
+      '-b:v', p.vb + 'k',
+      '-maxrate', Math.round(p.vb * 1.5) + 'k',
+      '-bufsize', (p.vb * 2) + 'k'
+    ];
+    if (fps > 30) args.push('-r', '29.97');
+    args = args.concat([
+      '-c:a', 'aac', '-b:a', p.ab + 'k', '-ar', '44100', '-ac', '2',
+      '-movflags', '+faststart',
+      '-f', 'mp4', outName
+    ]);
+    var convLines = await runFF(args, function (line) {
+      var m = /time=\s*(\d+:\d+:\d+\.\d+)/.exec(line);
+      if (m && duration > 0) {
+        var pct = Math.min(99, Math.round(ts2sec(m[1]) / duration * 100));
+        self.postMessage({ type: 'progress', percent: pct });
+      }
+    });
+
+    var mp4;
+    try { mp4 = core.FS.readFile(outName); }
+    catch (e) {
+      throw new Error('FFmpeg did not produce an output file.\n\n' +
+        convLines.slice(-10).join('\n'));
+    }
+    if (!mp4.length) throw new Error('Output file is empty.\n\n' + convLines.slice(-10).join('\n'));
+
+    self.postMessage({ type: 'stage', stage: 'thumbnail' });
+    var seek = Math.min(duration > 2 ? duration * 0.2 : 0, 60);
+    await runFF([
+      '-ss', seek.toFixed(2), '-i', inName,
+      '-frames:v', '1', '-vf', vfilter(160, 120),
+      '-q:v', '4', '-f', 'mjpeg', thmName
+    ]);
+    var thm = null;
+    try { thm = core.FS.readFile(thmName); } catch (e) {}
+
+    tryUnlink(inName); tryUnlink(outName); tryUnlink(thmName);
+    var transfer = [mp4.buffer];
+    if (thm) transfer.push(thm.buffer);
+    self.postMessage({ type: 'done', mp4: mp4.buffer, thm: thm ? thm.buffer : null }, transfer);
+  } catch (e) {
+    tryUnlink(inName); tryUnlink(outName); tryUnlink(thmName);
+    var friendly = /abort|memory|allocate/i.test(String(e && e.message)) ?
+      'The phone ran out of memory for this file. Try a smaller video or the Small Size preset.\n\n' : '';
+    self.postMessage({ type: 'error', error: friendly + (e && e.message ? e.message : String(e)) });
+  }
+}
+</script>
+
+<script>
+'use strict';
+(function () {
+  var engineEl = document.getElementById('engine');
+  var drop = document.getElementById('drop');
+  var fileInput = document.getElementById('file');
+  var presetSelect = document.getElementById('preset');
+  var presetDesc = document.getElementById('preset-desc');
+  var convertBtn = document.getElementById('convert');
+  var statusEl = document.getElementById('status');
+  var statusText = document.getElementById('status-text');
+  var bar = document.getElementById('bar');
+  var resultEl = document.getElementById('result');
+  var errorEl = document.getElementById('error');
+  var errorText = document.getElementById('error-text');
+
+  var DESCRIPTIONS = {
+    native: 'Matches the PSP screen exactly. Best balance of quality and size.',
+    hq: 'Same resolution, double the bitrate. For fast-motion video.',
+    small: 'Fits the most video on a Memory Stick — and converts fastest.',
+    tv: 'Full-resolution for PSP-2000/3000 video-out to a TV.'
+  };
+  var selectedFile = null;
+  var engineReady = false;
+  var busy = false;
+  var worker = null;
+
+  function updateDesc() { presetDesc.textContent = DESCRIPTIONS[presetSelect.value] || ''; }
+  presetSelect.addEventListener('change', updateDesc);
+  updateDesc();
+
+  // The engine is embedded as gzipped base64; inflate via the browser's
+  // built-in DecompressionStream (Chrome 80+, Safari 16.4+).
+  function b64GzToBuffer(b64) {
+    return fetch('data:application/octet-stream;base64,' + b64)
+      .catch(function () {
+        // Fallback for engines that reject huge data: URLs in fetch.
+        var bin = atob(b64);
+        var bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return new Response(bytes);
+      })
+      .then(function (r) { return r.blob(); })
+      .then(function (blob) {
+        var ds = new DecompressionStream('gzip');
+        return new Response(blob.stream().pipeThrough(ds)).arrayBuffer();
+      });
+  }
+
+  function bootEngine() {
+    if (typeof DecompressionStream === 'undefined') {
+      return engineFailed('This browser lacks DecompressionStream. Use Chrome (Android) or Safari 16.4+.');
+    }
+    var workerSrc = document.getElementById('worker-src').textContent;
+    b64GzToBuffer(document.getElementById('core-js-b64').textContent.trim())
+      .then(function (coreJsBuf) {
+        var blob = new Blob([coreJsBuf, '\n;\n', workerSrc], { type: 'text/javascript' });
+        worker = new Worker(URL.createObjectURL(blob));
+        worker.onerror = function (e) { engineFailed(e.message || 'Worker error'); };
+        worker.onmessage = onWorkerMessage;
+        return b64GzToBuffer(document.getElementById('wasm-b64').textContent.trim());
+      })
+      .then(function (wasm) { worker.postMessage({ type: 'init', wasm: wasm }, [wasm]); })
+      .catch(function (e) { engineFailed('Could not decode engine: ' + (e && e.message ? e.message : e)); });
+  }
+
+  function engineFailed(msg) {
+    engineEl.textContent = 'Engine failed';
+    engineEl.className = 'engine failed';
+    showError('The conversion engine could not start.\n\n' + msg +
+      '\n\nTry opening this file in Chrome (Android) — some browsers limit WebAssembly.');
+  }
+
+  function onWorkerMessage(ev) {
+    var msg = ev.data;
+    if (msg.type === 'ready') {
+      engineReady = true;
+      engineEl.textContent = 'Engine ready ✔';
+      engineEl.className = 'engine ready';
+      convertBtn.disabled = !selectedFile;
+    } else if (msg.type === 'stage') {
+      var text = { reading: 'Reading file…', probing: 'Analyzing video…',
+        converting: 'Converting… this takes a while on a phone',
+        thumbnail: 'Creating PSP menu thumbnail…' }[msg.stage] || 'Working…';
+      setProgress(msg.stage === 'thumbnail' ? 99 : 0, text);
+    } else if (msg.type === 'progress') {
+      setProgress(msg.percent, 'Converting… ' + msg.percent + '%');
+    } else if (msg.type === 'done') {
+      busy = false;
+      setProgress(100, 'Done!');
+      showResult(new Uint8Array(msg.mp4), msg.thm ? new Uint8Array(msg.thm) : null);
+    } else if (msg.type === 'error') {
+      busy = false;
+      showError(msg.error);
+    } else if (msg.type === 'fatal') {
+      engineFailed(msg.error);
+    }
+  }
+
+  drop.addEventListener('click', function () { if (!busy) fileInput.click(); });
+  drop.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+  });
+  fileInput.addEventListener('change', function () {
+    if (fileInput.files[0]) setFile(fileInput.files[0]);
+  });
+  ['dragover', 'dragenter'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) { e.preventDefault(); });
+  });
+  drop.addEventListener('drop', function (e) {
+    e.preventDefault();
+    if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+  });
+
+  function setFile(file) {
+    selectedFile = file;
+    drop.classList.add('has-file');
+    drop.querySelector('.dz-inner').innerHTML =
+      '<div class="dz-icon">🎬</div><p class="dz-filename"></p>' +
+      '<p class="dz-filesize">' + formatSize(file.size) + ' — tap to change</p>';
+    drop.querySelector('.dz-filename').textContent = file.name;
+    convertBtn.disabled = !engineReady;
+    resultEl.hidden = true;
+    errorEl.hidden = true;
+    if (file.size > 900 * 1e6) {
+      showError('Heads up: this file is ' + formatSize(file.size) +
+        '. In-browser conversion holds the whole file in memory and phones ' +
+        'usually cap out near 1 GB — it may fail. You can still try.');
+    }
+  }
+
+  convertBtn.addEventListener('click', function () {
+    if (!selectedFile || !engineReady || busy) return;
+    busy = true;
+    convertBtn.disabled = true;
+    resultEl.hidden = true;
+    errorEl.hidden = true;
+    statusEl.hidden = false;
+    setProgress(0, 'Starting…');
+    worker.postMessage({
+      type: 'convert',
+      file: selectedFile,
+      preset: presetSelect.value,
+      name: selectedFile.name
+    });
+  });
+
+  function setProgress(percent, text) {
+    bar.style.width = percent + '%';
+    statusText.textContent = text;
+  }
+
+  function baseName(name) {
+    var base = name.replace(/\.[^.]*$/, '')
+      .replace(/[\\/:*?"<>|\x00-\x1f]/g, '').trim() || 'video';
+    return base.slice(0, 64);
+  }
+
+  function showResult(mp4, thm) {
+    statusEl.hidden = true;
+    resultEl.hidden = false;
+    convertBtn.disabled = false;
+    var base = baseName(selectedFile.name);
+    setDownload('dl-mp4', new Blob([mp4], { type: 'video/mp4' }), base + '.MP4');
+    if (thm) {
+      setDownload('dl-thm', new Blob([thm], { type: 'image/jpeg' }), base + '.THM');
+      document.getElementById('dl-thm').style.display = '';
+    } else {
+      document.getElementById('dl-thm').style.display = 'none';
+    }
+    var entries = [{ name: 'VIDEO/' + base + '.MP4', data: mp4 }];
+    if (thm) entries.push({ name: 'VIDEO/' + base + '.THM', data: thm });
+    setDownload('dl-zip', new Blob([buildZip(entries)], { type: 'application/zip' }),
+      base + '-psp.zip');
+  }
+
+  function setDownload(id, blob, filename) {
+    var a = document.getElementById(id);
+    if (a.dataset.url) URL.revokeObjectURL(a.dataset.url);
+    var url = URL.createObjectURL(blob);
+    a.dataset.url = url;
+    a.href = url;
+    a.download = filename;
+  }
+
+  function showError(message) {
+    statusEl.hidden = true;
+    errorEl.hidden = false;
+    errorText.textContent = message;
+    convertBtn.disabled = !(selectedFile && engineReady);
+  }
+  document.getElementById('retry').addEventListener('click', function () {
+    errorEl.hidden = true;
+  });
+
+  function formatSize(bytes) {
+    if (bytes >= 1e9) return (bytes / 1e9).toFixed(2) + ' GB';
+    if (bytes >= 1e6) return (bytes / 1e6).toFixed(1) + ' MB';
+    return Math.ceil(bytes / 1e3) + ' KB';
+  }
+
+  // Dependency-free ZIP (STORE method) so the two PSP files download as one.
+  var CRC_TABLE = (function () {
+    var t = new Uint32Array(256);
+    for (var n = 0; n < 256; n++) {
+      var c = n;
+      for (var k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+  function crc32(buf) {
+    var c = 0xffffffff;
+    for (var i = 0; i < buf.length; i++) c = CRC_TABLE[(c ^ buf[i]) & 0xff] ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  }
+  function buildZip(entries) {
+    var now = new Date();
+    var time = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+    var day = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+    var enc = new TextEncoder();
+    var parts = [], central = [], offset = 0;
+    entries.forEach(function (e) {
+      var nameB = enc.encode(e.name);
+      var crc = crc32(e.data), size = e.data.length;
+      var lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true);
+      lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+      lh.setUint16(10, time, true); lh.setUint16(12, day, true);
+      lh.setUint32(14, crc, true); lh.setUint32(18, size, true);
+      lh.setUint32(22, size, true); lh.setUint16(26, nameB.length, true);
+      lh.setUint16(28, 0, true);
+      parts.push(new Uint8Array(lh.buffer), nameB, e.data);
+      var ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true);
+      ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true);
+      ch.setUint16(10, 0, true); ch.setUint16(12, time, true);
+      ch.setUint16(14, day, true); ch.setUint32(16, crc, true);
+      ch.setUint32(20, size, true); ch.setUint32(24, size, true);
+      ch.setUint16(28, nameB.length, true); ch.setUint32(42, offset, true);
+      central.push(new Uint8Array(ch.buffer), nameB);
+      offset += 30 + nameB.length + size;
+    });
+    var centralSize = central.reduce(function (n, b) { return n + b.length; }, 0);
+    var end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true);
+    end.setUint16(8, entries.length, true); end.setUint16(10, entries.length, true);
+    end.setUint32(12, centralSize, true); end.setUint32(16, offset, true);
+    var all = parts.concat(central, [new Uint8Array(end.buffer)]);
+    var total = all.reduce(function (n, b) { return n + b.length; }, 0);
+    var out = new Uint8Array(total), pos = 0;
+    all.forEach(function (b) { out.set(b, pos); pos += b.length; });
+    return out;
+  }
+
+  bootEngine();
+})();
+</script>
+</body>
+</html>
