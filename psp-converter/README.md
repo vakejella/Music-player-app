@@ -23,6 +23,17 @@ Modern MP4s (High profile, 1080p, 60 fps, 5.1 audio…) show up as
 Works on any PSP with firmware **3.30+** (every PSP-1000/2000/3000/Go
 updates to 6.61).
 
+## Single-file edition
+
+Everything below is also bundled into one standalone file,
+[`psp-video-converter.mjs`](psp-video-converter.mjs) — copy just that file
+anywhere and run it. No args starts the web app; file args convert directly:
+
+```bash
+node psp-video-converter.mjs               # → http://localhost:8090
+node psp-video-converter.mjs movie.mp4     # terminal conversion
+```
+
 ## Web app
 
 ```bash
