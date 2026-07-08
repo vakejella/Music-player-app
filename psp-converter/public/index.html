@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PSP Video Converter</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='10' y='3' rx='2' fill='%23111'/%3E%3Crect x='4' y='5' width='8' height='6' rx='1' fill='%234aa8ff'/%3E%3C/svg%3E">
+</head>
+<body>
+  <div class="wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path d="M0,192 C240,96 480,288 720,192 C960,96 1200,256 1440,160 L1440,320 L0,320 Z"/>
+    </svg>
+  </div>
+
+  <main>
+    <header>
+      <h1><span class="psp-logo">PSP</span> Video Converter</h1>
+      <p class="tagline">Turn any MP4 into a video your PlayStation&nbsp;Portable can play.</p>
+    </header>
+
+    <section id="drop" class="dropzone" tabindex="0" role="button"
+             aria-label="Choose a video file to convert">
+      <div class="dz-inner">
+        <div class="dz-icon">⬆</div>
+        <p><strong>Drop an MP4 here</strong> or tap to choose a file</p>
+        <p class="dz-hint">MP4, MOV, MKV, AVI, WebM — anything FFmpeg can read</p>
+      </div>
+      <input type="file" id="file" accept="video/*,.mkv,.avi,.mov,.webm,.mp4" hidden>
+    </section>
+
+    <section class="options">
+      <label for="preset">Quality preset</label>
+      <select id="preset"></select>
+      <p id="preset-desc" class="preset-desc"></p>
+    </section>
+
+    <button id="convert" class="convert-btn" disabled>Convert for PSP</button>
+
+    <section id="status" class="status" hidden>
+      <div class="progress-track"><div id="bar" class="progress-bar"></div></div>
+      <p id="status-text">Uploading…</p>
+    </section>
+
+    <section id="result" class="result" hidden>
+      <h2>✔ Ready for your PSP</h2>
+      <div class="downloads">
+        <a id="dl-zip" class="dl primary" download>Download PSP package (.zip)</a>
+        <a id="dl-mp4" class="dl" download>Video only (.MP4)</a>
+        <a id="dl-thm" class="dl" download>Thumbnail (.THM)</a>
+      </div>
+      <ol class="howto">
+        <li>Connect the PSP with USB (<em>Settings → USB Connection</em>) or use a Memory&nbsp;Stick reader.</li>
+        <li>Unzip the package to the <strong>root</strong> of the Memory Stick — it creates/uses the <code>VIDEO</code> folder.</li>
+        <li>On the PSP, open <strong>Video → Memory Stick</strong> and press ✕ to play.</li>
+      </ol>
+    </section>
+
+    <section id="error" class="error" hidden>
+      <h2>✖ Conversion failed</h2>
+      <pre id="error-text"></pre>
+      <button id="retry" class="dl">Start over</button>
+    </section>
+
+    <footer>
+      <p>Runs locally — your videos never leave this machine. Output: H.264 Baseline + AAC,
+         playable on any PSP with firmware 3.30 or later.</p>
+    </footer>
+  </main>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>

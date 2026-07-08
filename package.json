@@ -7,7 +7,8 @@
     "start": "node server.mjs",
     "dev": "node server.mjs",
     "icons": "node icons/make-icons.mjs",
-    "test": "node test/ids.test.mjs && node test/wsz.test.mjs && node test/coverart.test.mjs"
+    "psp": "node psp-converter/server.mjs",
+    "test": "node test/ids.test.mjs && node test/wsz.test.mjs && node test/coverart.test.mjs && node test/psp.test.mjs"
   },
   "keywords": [
     "winamp",
