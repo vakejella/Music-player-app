@@ -113,6 +113,20 @@ The native shell forwards the in-page file pickers to Android's document
 chooser, so **EJECT / + ADD** pick audio files and **LOAD .WSZ SKIN** picks skin
 archives straight from device storage.
 
+## 🎮 Bonus: PSP Video Converter
+
+The repo also ships a companion app that converts MP4s (or anything FFmpeg
+reads) into videos playable on a **PlayStation Portable** — H.264 Baseline
+480×272 + AAC, with a `.THM` menu thumbnail and a ZIP laid out for the
+Memory Stick's `/VIDEO` folder.
+
+```bash
+npm run psp                            # web UI at http://localhost:8090
+node psp-converter/cli.mjs movie.mp4   # or straight from the terminal
+```
+
+Requires FFmpeg on your PATH. See [`psp-converter/README.md`](psp-converter/README.md).
+
 ## Project structure
 
 ```

@@ -4,6 +4,9 @@ node_modules/
 .cache/
 dist/
 
+# PSP converter scratch space
+psp-converter/.work/
+
 # Android build
 android/.gradle/
 android/local.properties
@@ -12,3 +15,6 @@ android/build/
 android/.idea/
 *.iml
 *.apk
+
+# built mobile single-file edition
+psp-converter/dist/
